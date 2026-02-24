@@ -1,120 +1,123 @@
-# Estructura Y Flujos Del Proyecto
+# 02 - Estructura y flujos del proyecto
 
-**Resumen**
-Este proyecto es una app ASP.NET Core MVC con vistas Razor y una API para autenticacion que guarda usuarios en Firestore. El frontend es HTML y JS plano servido desde `wwwroot` y vistas en `Views`.
+## 1. Arquitectura general
 
-**Carpetas Principales**
-1. `Controllers` contiene los controladores MVC y los endpoints de API.
-2. `Data` contiene utilidades de datos y el seed local (solo para desarrollo).
-3. `Models` contiene las entidades de dominio.
-4. `Services` contiene servicios auxiliares como el hasher de contrasenas.
-5. `Views` contiene las vistas Razor para la web.
-6. `wwwroot` contiene CSS, JS, imagenes y librerias estaticas.
-7. `Properties` contiene configuracion de lanzamiento.
-8. `docs` contiene la documentacion del proyecto.
+SafeByte esta dividido en 3 capas principales:
 
-**Archivos Clave**
-1. `Program.cs` configura el contenedor DI, Firestore y el routing.
-2. `SafeByte.csproj` define dependencias y compilacion.
-3. `appsettings.json` tiene el `Firestore:ProjectId`.
-4. `appsettings.Development.json` permite `SeedOnStartup` y `CredentialsPath`.
-5. `.gitignore` ignora `secrets/` y binarios.
+1. Vista (Razor + JS):
+- `Views/Home/*.cshtml`
+- `wwwroot/src/ventanas/*.js`
 
-**Controllers**
-`Controllers/HomeController.cs`
-1. Renderiza vistas principales.
-2. Acciones disponibles: `Index`, `Home`, `Comidas`, `Error`.
+2. Controladores (API + MVC):
+- `Controllers/HomeController.cs` (vistas)
+- `Controllers/AuthController.cs` (registro/login)
+- `Controllers/AllergensController.cs` (preferencias de alergenos)
 
-`Controllers/AuthController.cs`
-1. API REST para registro y login.
-2. Guarda y consulta usuarios en Firestore.
-3. Usa `PasswordHasher` para comparar contrasenas.
+3. Datos (Firestore):
+- Coleccion `users`
+- Documento por usuario: `users/{email_normalizado}`
 
-**Models**
-1. `User.cs` define el modelo de usuario.
-2. `Allergen.cs` y `UserAllergen.cs` estan listos para alergias si se extiende el proyecto.
-3. `ErrorViewModel.cs` se usa en la vista de error.
+## 2. Estructura de carpetas (resumen)
 
-**Services**
-`Services/PasswordHasher.cs`
-1. Hashea contrasenas con SHA256.
-2. Se usa en registro y login.
+- `Controllers`: endpoints MVC/API.
+- `Models`: modelos de dominio y DTO.
+- `Services`: utilidades (`PasswordHasher`, `AllergenCatalog`).
+- `Data`: utilidades legacy de seed en JSON.
+- `Views`: pantallas Razor.
+- `wwwroot`: JS/CSS/imagenes estaticas.
+- `docs`: documentacion tecnica.
 
-**Data**
-`Data/Seed/Users.json`
-1. Contiene usuarios de ejemplo.
-2. Se usa solo en desarrollo si `SeedOnStartup` esta activo.
+## 3. Archivos clave
 
-`Data/FileDatabase.cs`
-1. Lee el JSON de seed.
-2. No es una base de datos real, solo soporte para la semilla.
+- `Program.cs`: configura Firestore, CORS, routing y seed.
+- `Controllers/AuthController.cs`: login/registro.
+- `Controllers/AllergensController.cs`: API para leer/guardar alergenos por usuario.
+- `Services/AllergenCatalog.cs`: catalogo y normalizacion de alergenos permitidos.
+- `wwwroot/src/ventanas/index.js`: login/registro en frontend.
+- `wwwroot/src/ventanas/Home.js`: carga y guardado de preferencias.
+- `wwwroot/src/ventanas/comida.js`: filtrado de comidas con alergenos del usuario.
 
-**Views**
-`Views/Home/Index.cshtml`
-1. Pantalla de login y registro.
-2. Carga `wwwroot/src/ventanas/index.js`.
+## 4. Modelo de datos en Firestore
 
-`Views/Home/Home.cshtml`
-1. Pagina principal con secciones internas.
-2. Incluye el scanner y configuracion de usuario.
+Coleccion: `users`
 
-`Views/Home/Comidas.cshtml`
-1. Muestra recetas y filtros por alergias.
-2. Usa `wwwroot/src/ventanas/comida.js`.
+Documento: ID = email en minusculas.
 
-`Views/Shared/_Layout.cshtml`
-1. Layout basico para vistas que lo usen.
-2. Las vistas principales usan `Layout = null` para HTML completo.
+Campos principales:
+- `username` (string)
+- `email` (string)
+- `passwordHash` (string)
+- `createdAt` (timestamp)
+- `allergens` (array de string)
+- `allergensUpdatedAt` (timestamp)
+- `seeded` (bool opcional en usuarios de semilla)
 
-**wwwroot**
-1. `wwwroot/src/css` contiene estilos.
-2. `wwwroot/src/ventanas` contiene JS del frontend.
-3. `wwwroot/src/media` contiene imagenes.
-4. `wwwroot/lib` contiene librerias de terceros.
+## 5. Flujo de registro
 
-**Flujo De Registro**
-1. El usuario completa el formulario en `Index`.
-2. `index.js` envia POST a `/api/Auth/Register`.
-3. `AuthController` normaliza email y hashea password.
-4. Se guarda un documento en Firestore en `users/{email}`.
-5. El frontend redirige a `/Home/Home`.
+1. Usuario rellena formulario en `Index`.
+2. Frontend llama `POST /api/Auth/Register`.
+3. Backend:
+- normaliza email
+- verifica que no exista
+- hashea password
+- crea usuario con `allergens: []`
+4. Frontend guarda sesion local (`sb_user`) y redirige a `/Home/Home`.
 
-**Flujo De Login**
-1. El usuario completa el formulario en `Index`.
-2. `index.js` envia POST a `/api/Auth/Login`.
-3. `AuthController` busca el documento por email.
-4. Si el hash coincide, devuelve `Login correcto`.
-5. El frontend redirige a `/Home/Home`.
+## 6. Flujo de login
 
-**Flujo De Semilla (Development)**
-1. Arranca la app con `ASPNETCORE_ENVIRONMENT=Development`.
-2. `SeedOnStartup` en `appsettings.Development.json` debe estar en `true`.
-3. `Program.cs` llama a `SeedFirestoreAsync`.
-4. Se leen usuarios de `Data/Seed/Users.json`.
-5. Se crean documentos en Firestore si no existen.
+1. Usuario hace login en `Index`.
+2. Frontend llama `POST /api/Auth/Login`.
+3. Backend valida password hash.
+4. Backend devuelve datos del usuario + alergenos guardados.
+5. Frontend guarda `sb_user` y cache de alergenos local.
 
-**Endpoints API**
-1. `POST /api/Auth/Register` crea usuario.
-2. `POST /api/Auth/Login` valida usuario.
+## 7. Flujo de preferencias de alergenos
 
-**Como Se Mapean Las Rutas**
-1. Ruta por defecto: `/` y `/Home/Index`.
-2. Otras vistas: `/Home/Home` y `/Home/Comidas`.
-3. Endpoints API bajo `/api`.
+1. En `Home`, `Home.js` detecta usuario logueado.
+2. Si hay usuario:
+- llama `GET /api/Allergens/User?email=...`
+- pinta checkboxes con datos remotos
+3. Si no hay usuario (skip login):
+- usa almacenamiento local como fallback
+4. Al pulsar `Guardar preferencias`:
+- si logueado: `PUT /api/Allergens/User`
+- si invitado: guardado local
 
-**Datos En Firestore**
-1. Coleccion: `users`.
-2. Documento: ID = email en minusculas.
-3. Campos: `username`, `email`, `passwordHash`, `createdAt`, `seeded`.
+## 8. Flujo de filtrado de comidas
 
-**Puntos A Tener En Cuenta**
-1. No subas `secrets/service-account.json` a git.
-2. El JSON de Service Account es solo para backend.
-3. Firestore debe estar creado con ID `(default)`.
-4. El login requiere `username`, `email` y `password` porque el modelo lo exige.
+1. `comida.js` intenta cargar alergenos remotos del usuario.
+2. Si falla o no hay usuario, usa cache local.
+3. Filtra `comidas` excluyendo recetas con alergenos bloqueados.
+4. Aplica tambien texto de busqueda.
 
-**Si Quieres Ampliar**
-1. Mover alergias a Firestore.
-2. Crear colecciones `allergens` y `user_allergens`.
-3. Añadir validacion y roles en backend.
-4. Añadir pruebas automáticas.
+## 9. Endpoints API actuales
+
+Auth:
+- `POST /api/Auth/Register`
+- `POST /api/Auth/Login`
+
+Alergenos:
+- `GET /api/Allergens/Catalog`
+- `GET /api/Allergens/User?email=...`
+- `PUT /api/Allergens/User`
+
+## 10. Claves de almacenamiento local (frontend)
+
+- `sb_user`: usuario actual (`email`, `username`)
+- `sb_alergenos`: cache local de alergenos
+- `alergenosSeleccionados`: clave legacy mantenida por compatibilidad
+
+## 11. Limitaciones actuales (importante)
+
+1. No hay JWT/cookies de sesion de servidor.
+2. La API de alergenos identifica usuario por email recibido.
+3. Para un entorno productivo real:
+- añadir autenticacion robusta (JWT/Firebase Auth)
+- validar identidad en backend antes de permitir `PUT /api/Allergens/User`
+
+## 12. Nota de codificacion (UTF-8)
+
+Para textos con tildes (`Configuración`, `Lácteos`, `alérgenos`):
+1. Mantener archivos de vista/script/documentación en UTF-8.
+2. Si aparece mojibake (`Configuración`, `Lácteos`), el frontend puede enviar valores rotos.
+3. El backend ahora tolera parte de estos casos, pero la corrección principal debe hacerse en los archivos fuente.

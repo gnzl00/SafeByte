@@ -113,7 +113,9 @@ static async Task SeedFirestoreAsync(IServiceProvider services, IConfiguration c
             ["email"] = email,
             ["passwordHash"] = PasswordHasher.HashPassword(user.Password),
             ["createdAt"] = Timestamp.GetCurrentTimestamp(),
-            ["seeded"] = true
+            ["seeded"] = true,
+            ["allergens"] = new List<string>(),
+            ["allergensUpdatedAt"] = Timestamp.GetCurrentTimestamp()
         };
 
         await docRef.SetAsync(data);

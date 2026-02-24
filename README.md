@@ -1,34 +1,40 @@
 # SafeByte
 
-Proyecto ASP.NET Core MVC + API con vistas Razor y assets estaticos en `wwwroot`.
+Aplicacion web ASP.NET Core MVC + API para recomendar comidas seguras segun alergenos del usuario.
 
-**Estructura**
-- `Controllers` controladores MVC y API.
-- `Data` utilidades de persistencia (legacy).
-- `Data/Seed/Users.json` datos de ejemplo (legacy).
-- `Models` entidades del dominio.
-- `Views` vistas Razor (login, home, comidas).
-- `wwwroot` CSS, JS, imagenes y librerias estaticas.
-- `Program.cs` configuracion de la app y rutas.
+## Estado actual (resumen rapido)
+- Backend: ASP.NET Core 8.
+- Base de datos: Firebase Firestore (no MySQL/XAMPP).
+- Frontend: Razor + JavaScript plano en `wwwroot/src/ventanas`.
+- Login/registro: API en `AuthController`.
+- Alergenos por usuario: API en `AllergensController`, persistidos en Firestore.
+- Textos y formularios de usuario corregidos en UTF-8 para evitar errores de tildes (`Lácteos`, `Configuración`, etc.).
 
-**Requisitos**
-- .NET 8 SDK.
-- Firebase Firestore (proyecto creado en Firebase).
+## Cambio de arquitectura (antes vs ahora)
+- Antes: almacenamiento local temporal en navegador para alergenos.
+- Ahora: alergenos guardados en Firestore por usuario (`users/{email}`), con lectura y escritura via API.
+- Resultado: las preferencias no se pierden al cerrar sesion o cambiar de dispositivo (si el usuario inicia sesion con su cuenta).
 
-**Configurar**
-1. Crea un proyecto en Firebase y habilita Firestore.
-2. Descarga un Service Account JSON y colocalo en `secrets/service-account.json` (ruta relativa al repo).
-3. Actualiza `Firestore:ProjectId` en `appsettings.json` (o exporta `GOOGLE_CLOUD_PROJECT`).
-4. (Opcional) Para sembrar datos, activa `Firestore:SeedOnStartup` en `appsettings.Development.json`.
-5. (Opcional) Si no usas `CredentialsPath`, exporta `GOOGLE_APPLICATION_CREDENTIALS` con la ruta al JSON.
+## Ejecucion rapida
+1. Instala `.NET 8 SDK`.
+2. Configura Firestore y credenciales (ver `docs/01-setup.md`).
+3. Ejecuta:
+```bash
+dotnet restore
+dotnet run
+```
+4. Abre:
+- `http://localhost:5113`
+- `https://localhost:7113`
 
-**Ejecutar**
-1. `dotnet restore`
-2. `dotnet run`
+## Endpoints principales
+- `POST /api/Auth/Register`
+- `POST /api/Auth/Login`
+- `GET /api/Allergens/Catalog`
+- `GET /api/Allergens/User?email=usuario@dominio.com`
+- `PUT /api/Allergens/User`
 
-**Rutas principales**
-- `/` o `/Home/Index` login y registro.
-- `/Home/Home` pagina principal.
-- `/Home/Comidas` recetas.
-- `POST /api/Auth/Register` registro de usuario.
-- `POST /api/Auth/Login` login de usuario.
+## Documentacion detallada
+- Setup completo: [docs/01-setup.md](docs/01-setup.md)
+- Estructura y flujos: [docs/02-estructura-y-flujos.md](docs/02-estructura-y-flujos.md)
+- MVC de alergenos y persistencia: [docs/03-alergenos-mvc-y-persistencia.md](docs/03-alergenos-mvc-y-persistencia.md)
