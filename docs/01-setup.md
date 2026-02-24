@@ -1,7 +1,3 @@
-# 01 - Setup completo (paso a paso)
-
-Este documento sirve para levantar SafeByte desde cero en una maquina nueva.
-
 ## 1. Que necesitas instalar
 
 Obligatorio:
