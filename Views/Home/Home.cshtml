@@ -9,7 +9,7 @@
   <title>Scanner - SafeByte</title>
   <link rel="stylesheet" href="/src/css/home.css" />
   <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-  
+
   <style>
     /* Contenedor del scanner (cuadrado) */
     #scanner-container {
@@ -64,8 +64,8 @@
     </ul>
   </div>
 
-   <!-- Sección del scanner -->
-   <section id="scanner-section" class="content-section hidden">
+  <!-- Sección del scanner -->
+  <section id="scanner-section" class="content-section hidden">
     <h2>Escaneo código de barras</h2>
     <!-- Contenedor del video donde se mostrará el stream de la cámara -->
     <div class="scanner-wrapper">
@@ -75,21 +75,21 @@
         </div>
         <button onclick="startScanner()">Iniciar Escáner</button>
       </div>
-    
+
       <!-- Separador vertical -->
       <div class="scanner-separator"></div>
-    
+
       <div class="scanner-right">
         <div class="manual-input">
           <p>O introduce el código manualmente:</p>
           <input type="text" id="barcode-input" placeholder="Introduce aquí el código de barras">
           <button onclick="manualScan()">Buscar producto</button>
         </div>
-      </div>      
-    </div>           
+      </div>
+    </div>
     <div id="result">
       <div id="product-info"></div>
-    </div>    
+    </div>
   </section>
 
   <!-- Sección de Contacto -->
@@ -111,64 +111,64 @@
       Nuestra aplicación está diseñada para ofrecerte comidas seguras basadas en tus alergias alimentarias.
       Explora nuestras opciones y disfruta de una experiencia personalizada.
     </p>
-      <div class="testimonials-section">
-        <div class="testimonial">
-          <img src="/src/media/mujerCeliaca.png" alt="Foto de Lucía, celíaca">
-          <div class="testimonial-text">
-            <h3>Lucía, 27 años (celíaca)</h3>
-            <p>
-              "Ser celíaca no es solo evitar el pan. Comer fuera o elegir productos en el supermercado es una batalla constante.
-              Food DNA me ayudaría a sentirme segura y confiada cada vez que como algo nuevo."
-            </p>
-          </div>
-        </div>
-        <div class="testimonial">
-          <img src="/src/media/hombreFrutosSecos.png" alt="Foto de Diego, alérgico a frutos secos">
-          <div class="testimonial-text">
-            <h3>Diego, 34 años (alérgico a frutos secos)</h3>
-            <p>
-              "Una reacción alérgica puede cambiarte el día... o la vida. Esta aplicación me daría tranquilidad y así evitaría estar leyendo cada etiqueta durante 5 minutos."
-            </p>
-          </div>
+    <div class="testimonials-section">
+      <div class="testimonial">
+        <img src="/src/media/mujerCeliaca.png" alt="Foto de Lucía, celíaca">
+        <div class="testimonial-text">
+          <h3>Lucía, 27 años (celíaca)</h3>
+          <p>
+            "Ser celíaca no es solo evitar el pan. Comer fuera o elegir productos en el supermercado es una batalla constante.
+            Food DNA me ayudaría a sentirme segura y confiada cada vez que como algo nuevo."
+          </p>
         </div>
       </div>
+      <div class="testimonial">
+        <img src="/src/media/hombreFrutosSecos.png" alt="Foto de Diego, alérgico a frutos secos">
+        <div class="testimonial-text">
+          <h3>Diego, 34 años (alérgico a frutos secos)</h3>
+          <p>
+            "Una reacción alérgica puede cambiarte el día... o la vida. Esta aplicación me daría tranquilidad y así evitaría estar leyendo cada etiqueta durante 5 minutos."
+          </p>
+        </div>
+      </div>
+    </div>
   </section>
 
-    <!-- Sección de Configuración de Usuario -->
-    <section id="config-section" class="config-container content-section hidden">
-      <h2>Configuración de usuario</h2>
-      <p>Selecciona los alérgenos que deseas evitar en las comidas.</p>
-      <form id="alergenos-form">
-        <div class="checkbox-container">
-          <label class="alergeno-card">
-            <input type="checkbox" name="alergeno" value="Gluten" hidden />
-            Gluten
-          </label>
-          <label class="alergeno-card">
-            <input type="checkbox" name="alergeno" value="Lácteos" hidden />
-            Lácteos
-          </label>
-          <label class="alergeno-card">
-            <input type="checkbox" name="alergeno" value="Huevo" hidden />
-            Huevo
-          </label>
-          <label class="alergeno-card">
-            <input type="checkbox" name="alergeno" value="Frutos secos" hidden />
-            Frutos secos
-          </label>
-          <label class="alergeno-card">
-            <input type="checkbox" name="alergeno" value="Mariscos" hidden />
-            Mariscos
-          </label>
-          <label class="alergeno-card">
-            <input type="checkbox" name="alergeno" value="Soja" hidden />
-            Soja
-          </label>
-        </div>
-        <button type="button" id="save-alergenos">Guardar preferencias</button>
-      </form>
-      <p id="confirmation-message" style="display: none; color: green;">Preferencias guardadas con éxito.</p>
-    </section>
+  <!-- Sección de Configuración de Usuario -->
+  <section id="config-section" class="config-container content-section hidden">
+    <h2>Configuración de usuario</h2>
+    <p>Selecciona los alérgenos que deseas evitar en las comidas.</p>
+    <form id="alergenos-form">
+      <div class="checkbox-container">
+        <label class="alergeno-card">
+          <input type="checkbox" name="alergeno" value="Gluten" hidden />
+          Gluten
+        </label>
+        <label class="alergeno-card">
+          <input type="checkbox" name="alergeno" value="Lácteos" hidden />
+          Lácteos
+        </label>
+        <label class="alergeno-card">
+          <input type="checkbox" name="alergeno" value="Huevo" hidden />
+          Huevo
+        </label>
+        <label class="alergeno-card">
+          <input type="checkbox" name="alergeno" value="Frutos secos" hidden />
+          Frutos secos
+        </label>
+        <label class="alergeno-card">
+          <input type="checkbox" name="alergeno" value="Mariscos" hidden />
+          Mariscos
+        </label>
+        <label class="alergeno-card">
+          <input type="checkbox" name="alergeno" value="Soja" hidden />
+          Soja
+        </label>
+      </div>
+      <button type="button" id="save-alergenos">Guardar preferencias</button>
+    </form>
+    <p id="confirmation-message" style="display: none; color: green;">Preferencias guardadas con éxito.</p>
+  </section>
 
   <footer class="footer">
     <p class="textofooter">SafeByte 2025</p>
@@ -176,18 +176,6 @@
 
   <script src="/src/ventanas/Home.js"></script>
   <script>
-    // Guardar preferencias de alérgenos
-    document.getElementById("save-alergenos").addEventListener("click", () => {
-      const alergenosSeleccionados = Array.from(
-        document.querySelectorAll('input[name="alergeno"]:checked')
-      ).map((checkbox) => checkbox.value);
-      localStorage.setItem("alergenosSeleccionados", JSON.stringify(alergenosSeleccionados));
-      document.getElementById("confirmation-message").style.display = "block";
-      setTimeout(() => {
-        document.getElementById("confirmation-message").style.display = "none";
-      }, 2000);
-    });
-
     // Función para procesar el código ingresado manualmente
     function manualScan() {
       const barcode = document.getElementById("barcode-input").value.trim();
@@ -204,7 +192,7 @@
     // Función para iniciar el escáner, leer el código y solicitar la información del producto
     function startScanner() {
       console.log("Iniciando escáner...");
-      codeReader.decodeFromVideoDevice(null, 'video', (result, err) => {
+      codeReader.decodeFromVideoDevice(null, "video", (result, err) => {
         if (result) {
           console.log("Código detectado: " + result.text);
           // Asigna el código detectado al campo de entrada
@@ -233,7 +221,7 @@
             <p><strong>Nombre:</strong> ${producto.product_name || "Desconocido"}</p>
             <p><strong>Ingredientes:</strong> ${producto.ingredients_text || "No disponible"}</p>
             <p><strong>Alérgenos:</strong> ${producto.allergens || "No especificado"}</p>
-            <img src="${producto.image_url || ''}" alt="Imagen del producto" width="150">
+            <img src="${producto.image_url || ""}" alt="Imagen del producto" width="150">
           `;
           if (producto.nutriments) {
             let nutriments = producto.nutriments;
@@ -264,26 +252,5 @@
       }
     }
   </script>
-  <script>
-    // Aplicar las preferencias guardadas al cargar
-    function aplicarPreferenciasGuardadas() {
-      const guardados = JSON.parse(localStorage.getItem("alergenosSeleccionados")) || [];
-      document.querySelectorAll('.alergeno-card input[type="checkbox"]').forEach(input => {
-        input.checked = guardados.includes(input.value);
-        input.parentElement.classList.toggle('selected', input.checked);
-      });
-    }
-  
-    // Llama a la función al cargar la página
-    window.addEventListener("DOMContentLoaded", aplicarPreferenciasGuardadas);
-  </script> 
-  <script>
-    document.querySelectorAll('.alergeno-card input[type="checkbox"]').forEach(input => {
-      input.addEventListener('change', () => {
-        input.parentElement.classList.toggle('selected', input.checked);
-      });
-    });
-  </script>
-  <script src="/src/ventanas/Home.js"></script>
 </body>
 </html>

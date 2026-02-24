@@ -1,102 +1,116 @@
 using Google.Cloud.Firestore;
-using SafeByte.Models;           // Para la clase User
-using SafeByte.Services;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks; // Importante para métodos asíncronos
+using SafeByte.Models;
+using SafeByte.Services;
 
-namespace SafeByte.Controllers
+namespace SafeByte.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class AuthController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class AuthController : ControllerBase
+    private readonly CollectionReference _users;
+
+    public AuthController(FirestoreDb firestoreDb)
     {
-        private readonly CollectionReference _users;
+        _users = firestoreDb.Collection("users");
+    }
 
-        // Inyectamos FirestoreDb en el constructor
-        public AuthController(FirestoreDb firestoreDb)
+    [HttpPost("Register")]
+    public async Task<IActionResult> Register([FromBody] User newUser)
+    {
+        var email = NormalizeEmail(newUser.Email);
+        if (string.IsNullOrWhiteSpace(email))
         {
-            _users = firestoreDb.Collection("users");
+            return BadRequest("Email inválido.");
         }
 
-        // POST: /api/Auth/Register
-        [HttpPost("Register")]
-        public async Task<IActionResult> Register([FromBody] User newUser)
+        var docRef = _users.Document(email);
+        var snapshot = await docRef.GetSnapshotAsync();
+        if (snapshot.Exists)
         {
-            var email = NormalizeEmail(newUser.Email);
-            if (string.IsNullOrWhiteSpace(email))
-            {
-                return BadRequest("Email inválido.");
-            }
-
-            // Verifica si ya existe un usuario con ese Email
-            var docRef = _users.Document(email);
-            var snapshot = await docRef.GetSnapshotAsync();
-            if (snapshot.Exists)
-            {
-                return BadRequest("El usuario con ese Email ya existe.");
-            }
-
-            // Hashear la contraseña antes de guardar
-            var passwordHash = PasswordHasher.HashPassword(newUser.Password);
-
-            var userData = new Dictionary<string, object>
-            {
-                ["username"] = newUser.Username,
-                ["email"] = email,
-                ["passwordHash"] = passwordHash,
-                ["createdAt"] = Timestamp.GetCurrentTimestamp()
-            };
-
-            // Guarda el usuario en Firestore
-            await docRef.SetAsync(userData);
-
-            return Ok("Usuario registrado con éxito.");
+            return BadRequest("El usuario con ese Email ya existe.");
         }
 
-        // POST: /api/Auth/Login
-        [HttpPost("Login")]
-        public async Task<IActionResult> Login([FromBody] User loginData)
+        var passwordHash = PasswordHasher.HashPassword(newUser.Password);
+        var now = Timestamp.GetCurrentTimestamp();
+
+        var userData = new Dictionary<string, object>
         {
-            var email = NormalizeEmail(loginData.Email);
-            if (string.IsNullOrWhiteSpace(email))
-            {
-                return BadRequest("Credenciales inválidas (usuario no encontrado).");
-            }
+            ["username"] = newUser.Username,
+            ["email"] = email,
+            ["passwordHash"] = passwordHash,
+            ["createdAt"] = now,
+            ["allergens"] = new List<string>(),
+            ["allergensUpdatedAt"] = now
+        };
 
-            // Busca un usuario con el Email proporcionado
-            var docRef = _users.Document(email);
-            var snapshot = await docRef.GetSnapshotAsync();
-            if (!snapshot.Exists)
-            {
-                return BadRequest("Credenciales inválidas (usuario no encontrado).");
-            }
+        await docRef.SetAsync(userData);
 
-            // Hashear la contraseña ingresada para compararla con la almacenada
-            var hashedInputPassword = PasswordHasher.HashPassword(loginData.Password);
-            var storedPasswordHash = snapshot.GetValue<string>("passwordHash");
-            if (storedPasswordHash != hashedInputPassword)
+        return Ok(new
+        {
+            Message = "Usuario registrado con éxito.",
+            User = new
             {
-                return BadRequest("Credenciales inválidas (contraseña incorrecta).");
+                Username = newUser.Username,
+                Email = email,
+                Allergens = Array.Empty<string>()
             }
+        });
+    }
 
-            // Login correcto: retornamos un objeto con mensaje y datos del usuario
-            var username = snapshot.ContainsField("username")
-                ? snapshot.GetValue<string>("username")
-                : email;
-            return Ok(new
-            {
-                Message = "Login correcto",
-                User = new
-                {
-                    Username = username,
-                    Email = email
-                }
-            });
+    [HttpPost("Login")]
+    public async Task<IActionResult> Login([FromBody] User loginData)
+    {
+        var email = NormalizeEmail(loginData.Email);
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            return BadRequest("Credenciales inválidas (usuario no encontrado).");
         }
 
-        private static string NormalizeEmail(string? email)
+        var docRef = _users.Document(email);
+        var snapshot = await docRef.GetSnapshotAsync();
+        if (!snapshot.Exists)
         {
-            return email?.Trim().ToLowerInvariant() ?? string.Empty;
+            return BadRequest("Credenciales inválidas (usuario no encontrado).");
         }
+
+        var hashedInputPassword = PasswordHasher.HashPassword(loginData.Password);
+        var storedPasswordHash = snapshot.GetValue<string>("passwordHash");
+        if (storedPasswordHash != hashedInputPassword)
+        {
+            return BadRequest("Credenciales inválidas (contraseña incorrecta).");
+        }
+
+        var username = snapshot.ContainsField("username")
+            ? snapshot.GetValue<string>("username")
+            : email;
+        var allergens = GetNormalizedAllergens(snapshot);
+
+        return Ok(new
+        {
+            Message = "Login correcto",
+            User = new
+            {
+                Username = username,
+                Email = email,
+                Allergens = allergens
+            }
+        });
+    }
+
+    private static List<string> GetNormalizedAllergens(DocumentSnapshot snapshot)
+    {
+        if (!snapshot.TryGetValue<List<string>>("allergens", out var rawAllergens))
+        {
+            return new List<string>();
+        }
+
+        return AllergenCatalog.NormalizeMany(rawAllergens, out _);
+    }
+
+    private static string NormalizeEmail(string? email)
+    {
+        return email?.Trim().ToLowerInvariant() ?? string.Empty;
     }
 }

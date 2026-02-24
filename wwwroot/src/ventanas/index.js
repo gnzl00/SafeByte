@@ -1,84 +1,159 @@
-console.log('✅ index.js cargado');
+const USER_STORAGE_KEY = "sb_user";
+const LOCAL_ALLERGENS_KEY = "alergenosSeleccionados";
+const CACHE_ALLERGENS_KEY = "sb_alergenos";
 
-window.addEventListener('DOMContentLoaded', () => {
-  console.log('✅ DOM listo');
-  const sign_in_btn    = document.querySelector("#sign-in-btn");
-  const sign_up_btn    = document.querySelector("#sign-up-btn");
-  const container      = document.querySelector(".container");
-  const skip_login_btn = document.querySelector("#skip-login");
+window.addEventListener("DOMContentLoaded", () => {
+  const signInButton = document.querySelector("#sign-in-btn");
+  const signUpButton = document.querySelector("#sign-up-btn");
+  const container = document.querySelector(".container");
+  const skipLoginButton = document.querySelector("#skip-login");
 
-  // Cambiar entre Login y Sign Up
-  sign_up_btn.addEventListener("click", () => {
+  signUpButton.addEventListener("click", () => {
     container.classList.add("sign-up-mode");
   });
-  sign_in_btn.addEventListener("click", () => {
+
+  signInButton.addEventListener("click", () => {
     container.classList.remove("sign-up-mode");
   });
 
-  // Redirigir al Home
-  function redirectToHome() {
-    window.location.href = "/Home/Home";
-  }
+  document.querySelector(".sign-in-form").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    setError("login-error", "");
 
-  // Registro
-  function registerUser(username, email, password) {
-    fetch('/api/Auth/Register', {
-      method: 'POST',
-      headers: { 'Content-Type':'application/json' },
-      body: JSON.stringify({ username, email, password })
-    })
-    .then(res => res.text())
-    .then(msg => {
-      console.log('Registro:', msg);
+    const email = document.getElementById("login-email").value;
+    const password = document.getElementById("login-password").value;
+
+    try {
+      const responseData = await loginUser(email, password);
+      persistUserSession(responseData?.user);
       redirectToHome();
-    })
-    .catch(err => console.error('Error en registro:', err));
-  }
-
-  // Login (incluimos username para satisfacer la validación del modelo)
-  function loginUser(email, password) {
-    console.log('Intentando login con', { email, password });
-    fetch('/api/Auth/Login', {
-      method: 'POST',
-      headers: { 'Content-Type':'application/json' },
-      // Enviamos también "username" igual al email
-      body: JSON.stringify({ username: email, email, password })
-    })
-    .then(res => {
-      console.log('Fetch respondido status:', res.status);
-      if (!res.ok) {
-        return res.text().then(t => { throw new Error(t); });
-      }
-      return res.json();
-    })
-    .then(data => {
-      console.log('Login exitoso:', data);
-      redirectToHome();
-    })
-    .catch(err => {
-      console.error('Error en login:', err);
-      document.getElementById('login-error').textContent = err.message;
-    });
-  }
-
-  // Form Login
-  document.querySelector(".sign-in-form").addEventListener("submit", e => {
-    e.preventDefault();
-    document.getElementById('login-error').textContent = '';
-    const email    = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
-    loginUser(email, password);
+    } catch (error) {
+      setError("login-error", error.message);
+    }
   });
 
-  // Form Signup
-  document.querySelector(".sign-up-form").addEventListener("submit", e => {
-    e.preventDefault();
-    document.getElementById('signup-error').textContent = '';
-    const username = document.getElementById('signup-username').value;
-    const email    = document.getElementById('signup-email').value;
-    const password = document.getElementById('signup-password').value;
-    registerUser(username, email, password);
+  document.querySelector(".sign-up-form").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    setError("signup-error", "");
+
+    const username = document.getElementById("signup-username").value;
+    const email = document.getElementById("signup-email").value;
+    const password = document.getElementById("signup-password").value;
+
+    try {
+      const responseData = await registerUser(username, email, password);
+      persistUserSession(responseData?.user);
+      redirectToHome();
+    } catch (error) {
+      setError("signup-error", error.message);
+    }
   });
 
-  skip_login_btn.addEventListener("click", redirectToHome);
+  skipLoginButton.addEventListener("click", () => {
+    clearUserSession();
+    redirectToHome();
+  });
 });
+
+function redirectToHome() {
+  window.location.href = "/Home/Home";
+}
+
+async function registerUser(username, email, password) {
+  const response = await fetch("/api/Auth/Register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, email, password })
+  });
+
+  return handleApiResponse(response);
+}
+
+async function loginUser(email, password) {
+  const response = await fetch("/api/Auth/Login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    // Se mantiene username por compatibilidad con validación actual del modelo User.
+    body: JSON.stringify({ username: email, email, password })
+  });
+
+  return handleApiResponse(response);
+}
+
+async function handleApiResponse(response) {
+  const contentType = response.headers.get("content-type") || "";
+
+  if (contentType.includes("application/json")) {
+    const payload = await response.json();
+    if (!response.ok) {
+      throw new Error(payload?.message || payload?.title || JSON.stringify(payload));
+    }
+
+    return payload;
+  }
+
+  const text = await response.text();
+  if (!response.ok) {
+    throw new Error(text || `Error ${response.status}`);
+  }
+
+  return { message: text };
+}
+
+function persistUserSession(user) {
+  if (!user || typeof user.email !== "string") {
+    return;
+  }
+
+  const normalizedUser = {
+    email: user.email.trim().toLowerCase(),
+    username: typeof user.username === "string" ? user.username : ""
+  };
+
+  localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(normalizedUser));
+
+  const allergens = normalizeAllergenArray(user.allergens);
+  localStorage.setItem(CACHE_ALLERGENS_KEY, JSON.stringify(allergens));
+  localStorage.setItem(LOCAL_ALLERGENS_KEY, JSON.stringify(allergens));
+}
+
+function clearUserSession() {
+  localStorage.removeItem(USER_STORAGE_KEY);
+}
+
+function normalizeAllergenArray(input) {
+  if (!Array.isArray(input)) {
+    return [];
+  }
+
+  const seen = new Set();
+  const result = [];
+
+  input.forEach((value) => {
+    if (typeof value !== "string") {
+      return;
+    }
+
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return;
+    }
+
+    const key = trimmed.toLowerCase();
+    if (seen.has(key)) {
+      return;
+    }
+
+    seen.add(key);
+    result.push(trimmed);
+  });
+
+  return result;
+}
+
+function setError(elementId, message) {
+  const element = document.getElementById(elementId);
+  if (element) {
+    element.textContent = message;
+  }
+}
