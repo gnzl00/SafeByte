@@ -1,12 +1,14 @@
 const USER_STORAGE_KEY = "sb_user";
 const LOCAL_ALLERGENS_KEY = "alergenosSeleccionados";
 const CACHE_ALLERGENS_KEY = "sb_alergenos";
+const HISTORIAL_KEY = "sb_historial";
 
 document.addEventListener("DOMContentLoaded", () => {
   setupNavigation();
   setupAllergenCards();
   setupSaveButton();
   loadAllergenPreferences();
+  renderHistorial();
 });
 
 function setupNavigation() {
@@ -272,4 +274,58 @@ function showStatus(message, type) {
       messageNode.style.display = "none";
     }, 2200);
   }
+}
+
+// ── Historial de escaneos ────────────────────────────────────────────────────
+
+function getHistorialKey() {
+  const user = getCurrentUser();
+  return user ? `${HISTORIAL_KEY}_${user.email}` : HISTORIAL_KEY;
+}
+
+function getHistorial() {
+  try {
+    return JSON.parse(localStorage.getItem(getHistorialKey())) || [];
+  } catch {
+    return [];
+  }
+}
+
+function guardarEnHistorial(entrada) {
+  const historial = getHistorial();
+  // Evitar duplicados consecutivos del mismo código
+  if (historial.length > 0 && historial[0].codigo === entrada.codigo) return;
+  historial.unshift(entrada);
+  // Limitar a 50 entradas
+  if (historial.length > 50) historial.pop();
+  localStorage.setItem(getHistorialKey(), JSON.stringify(historial));
+  renderHistorial();
+}
+
+function limpiarHistorial() {
+  if (!confirm("¿Borrar todo el historial de escaneos?")) return;
+  localStorage.removeItem(getHistorialKey());
+  renderHistorial();
+}
+
+function renderHistorial() {
+  const lista = document.getElementById("historial-lista");
+  if (!lista) return;
+  const historial = getHistorial();
+  if (historial.length === 0) {
+    lista.innerHTML = "<p class=\"historial-vacio\">No hay escaneos registrados aún.</p>";
+    return;
+  }
+  lista.innerHTML = historial.map(e => `
+    <div class="historial-item">
+      ${e.imagen
+        ? `<img src="${e.imagen}" alt="${e.nombre}" onerror="this.style.display='none'">`
+        : `<img src="/src/media/placeholder.png" alt="sin imagen" style="display:none">`
+      }
+      <div class="historial-item-info">
+        <strong>${e.nombre}</strong>
+        <span>${e.codigo} &mdash; ${e.fecha}</span>
+      </div>
+    </div>
+  `).join("");
 }
