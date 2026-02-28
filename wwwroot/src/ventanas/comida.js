@@ -54,7 +54,52 @@ function abrirModal(comida) {
     comida.alergenos.length > 0 ? comida.alergenos.join(", ") : "Ninguno"
   }`;
 
+  document.getElementById("compartir-feedback").innerText = "";
+  document.getElementById("btn-compartir").onclick = () => compartirComida(comida);
   document.getElementById("modal-comida").classList.remove("hidden");
+}
+
+async function compartirComida(comida) {
+  const alergenos = comida.alergenos.length > 0 ? comida.alergenos.join(", ") : "Ninguno";
+  const recetaLimpia = comida.receta
+    .split("\n")
+    .map(l => l.trim())
+    .filter(l => l.length > 0)
+    .join("\n   ");
+  const texto = [
+    `🍽️ ¡Te comparto esta receta desde Food DNA!`,
+    ``,
+    `📌 ${comida.nombre}`,
+    ``,
+    `🧅 Ingredientes:`,
+    `   ${comida.ingredientes}`,
+    ``,
+    `👨‍🍳 Receta:`,
+    `   ${recetaLimpia}`,
+    ``,
+    `⚠️ Alérgenos: ${alergenos}`,
+    ``,
+    `— Descubre más recetas adaptadas a tus alergias en Food DNA 🌿`
+  ].join("\n");
+  const feedback = document.getElementById("compartir-feedback");
+
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: comida.nombre, text: texto });
+    } catch (e) {
+      if (e.name !== "AbortError") {
+        feedback.innerText = "No se pudo compartir.";
+      }
+    }
+  } else {
+    try {
+      await navigator.clipboard.writeText(texto);
+      feedback.innerText = "✓ Copiado al portapapeles";
+      setTimeout(() => feedback.innerText = "", 3000);
+    } catch {
+      feedback.innerText = "No se pudo copiar.";
+    }
+  }
 }
 
 document.getElementById("modal-comida").addEventListener("click", (event) => {
