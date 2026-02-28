@@ -13,15 +13,30 @@ function setupNavigation() {
   const navButtons = document.querySelectorAll(".nav-btn");
   const sections = document.querySelectorAll(".content-section");
 
-  navButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      const sectionId = button.getAttribute("data-section");
-      sections.forEach((section) => section.classList.add("hidden"));
+  function showSection(sectionId) {
+    sections.forEach((s) => s.classList.add("hidden"));
+    navButtons.forEach((b) => b.classList.remove("active"));
+    const target = document.getElementById(sectionId);
+    if (target) target.classList.remove("hidden");
+    const activeBtn = document.querySelector(`.nav-btn[data-section="${sectionId}"]`);
+    if (activeBtn) activeBtn.classList.add("active");
+  }
 
-      const section = document.getElementById(sectionId);
-      if (section) {
-        section.classList.remove("hidden");
-      }
+  // Show section from URL hash (e.g. coming from Comidas page)
+  const hash = window.location.hash.replace("#", "");
+  if (hash && document.getElementById(hash)) {
+    showSection(hash);
+  } else {
+    // Default: welcome section active
+    const homeBtn = document.querySelector('.nav-btn[data-section="welcome-section"]');
+    if (homeBtn) homeBtn.classList.add("active");
+  }
+
+  navButtons.forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      const sectionId = button.getAttribute("data-section");
+      showSection(sectionId);
     });
   });
 }
