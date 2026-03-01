@@ -1,15 +1,17 @@
-## 1. Que necesitas instalar
+﻿# 01 - Setup
+
+## 1. Requisitos
 
 Obligatorio:
 1. `.NET 8 SDK`
 2. Proyecto Firebase con Firestore habilitado
-3. Archivo JSON de Service Account de Firebase
+3. JSON de Service Account de Firebase
 
 Opcional:
-1. `git` para clonar
-2. VS Code / Visual Studio para desarrollo
+1. `git`
+2. VS Code o Visual Studio
 
-## 2. Clonar y entrar al proyecto
+## 2. Clonar y entrar al repo
 
 ```bash
 git clone <url-del-repo>
@@ -38,34 +40,25 @@ sudo apt-get install -y dotnet-sdk-8.0
 dotnet --version
 ```
 
-## 4. Crear y preparar Firestore
+## 4. Configurar Firestore
 
-1. Entra a Firebase Console.
-2. Abre tu proyecto.
-3. Ve a `Firestore Database`.
-4. Crea la base de datos (ID por defecto: `(default)`).
-5. Elige la region mas cercana a tus usuarios.
+1. Firebase Console -> proyecto
+2. `Firestore Database` -> crear base
+3. Crear/descargar Service Account key
 
-## 5. Descargar credenciales de backend (Service Account)
+## 5. Guardar credenciales
 
-1. Firebase Console -> `Project Settings`.
-2. Pestaña `Service Accounts`.
-3. Pulsa `Generate new private key`.
-4. Descarga el `.json`.
-
-## 6. Guardar el JSON en el proyecto
-
-1. Crea la carpeta `secrets` si no existe.
-2. Mueve el archivo descargado a:
+1. Crear carpeta `secrets` si no existe.
+2. Guardar archivo en:
 - `secrets/service-account.json`
 
 Importante:
-- Este archivo **no** se sube a git.
-- Ya esta ignorado por `.gitignore`.
+1. No subir este archivo a git.
+2. Alternativa: usar variable `GOOGLE_APPLICATION_CREDENTIALS`.
 
-## 7. Configurar `appsettings`
+## 6. Configurar `appsettings`
 
-Archivo: `appsettings.json`
+`appsettings.json`:
 ```json
 {
   "Firestore": {
@@ -74,19 +67,37 @@ Archivo: `appsettings.json`
 }
 ```
 
-Archivo: `appsettings.Development.json`
+`appsettings.Development.json`:
 ```json
 {
   "Firestore": {
     "CredentialsPath": "secrets/service-account.json",
-    "SeedOnStartup": true
+    "SeedOnStartup": false
   }
 }
 ```
 
-Notas:
-- `CredentialsPath` puede ser relativa al repo o absoluta.
-- Si no quieres usar `CredentialsPath`, exporta `GOOGLE_APPLICATION_CREDENTIALS`.
+## 7. Configurar IANutri
+
+`appsettings.json` o `appsettings.Development.json`:
+```json
+{
+  "IANutri": {
+    "BaseUrl": "https://models.inference.ai.azure.com",
+    "ApiKey": "",
+    "ReformulationModel": "gpt-4.1-nano",
+    "SuggestionModel": "gpt-4.1",
+    "CookingAssistantModel": "gpt-4.1",
+    "TimeoutSeconds": 60
+  }
+}
+```
+
+Variables de entorno soportadas para API key:
+1. `IANUTRI_API_KEY`
+2. `GITHUB_MODELS_API_KEY`
+3. `GITHUB_TOKEN`
+4. `OPENAI_API_KEY`
 
 ## 8. Restaurar y ejecutar
 
@@ -95,35 +106,26 @@ dotnet restore
 dotnet run
 ```
 
-Urls por defecto (segun `launchSettings.json`):
-- `http://localhost:5113`
-- `https://localhost:7113`
+URL local por defecto (`launchSettings.json`):
+1. `http://localhost:5188`
 
-## 9. Comprobar que todo funciona
+## 9. Verificacion minima
 
-1. Abre `http://localhost:5113`.
-2. Registra un usuario nuevo.
-3. Inicia sesion con ese usuario.
-4. En Firestore revisa la coleccion `users`:
-- Debe existir el documento con ID = email en minusculas.
-- Debe tener campos `username`, `email`, `passwordHash`, `createdAt`, `allergens`, `allergensUpdatedAt`.
+1. Abrir app en navegador.
+2. Registrar usuario e iniciar sesion.
+3. Guardar alergenos y confirmar en Firestore.
+4. Abrir `IANutri` y generar una sugerencia.
 
-## 10. Problemas tipicos y solucion
+## 10. Problemas comunes
 
 Error: `Firestore ProjectId is not configured`
-- Solucion: rellena `Firestore:ProjectId` en `appsettings.json`.
+1. Revisar `Firestore:ProjectId`.
 
 Error: `credentials file not found`
-- Solucion: revisa la ruta de `Firestore:CredentialsPath`.
+1. Revisar `Firestore:CredentialsPath`.
 
-Error al iniciar por HTTPS local
-- Solucion:
-```bash
-dotnet dev-certs https --trust
-```
+Error: `No se encontro API key para IANutri`
+1. Configurar `IANutri:ApiKey` o variable de entorno.
 
-No aparecen usuarios en Firestore tras registrar
-- Solucion:
-1. Verifica que Firestore esta creado en Firebase.
-2. Verifica que el backend arranco sin excepciones.
-3. Revisa que usas el mismo `ProjectId` que en Firebase.
+Error: `address already in use`
+1. Cerrar proceso previo o cambiar puerto.

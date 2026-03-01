@@ -1,4 +1,4 @@
-# SafeByte
+﻿# SafeByte
 
 Aplicacion web ASP.NET Core MVC + API para recomendar comidas seguras segun alergenos del usuario.
 
@@ -8,7 +8,7 @@ Aplicacion web ASP.NET Core MVC + API para recomendar comidas seguras segun aler
 - Frontend: Razor + JavaScript plano en `wwwroot/src/ventanas`.
 - Login/registro: API en `AuthController`.
 - Alergenos por usuario: API en `AllergensController`, persistidos en Firestore.
-- Textos y formularios de usuario corregidos en UTF-8 para evitar errores de tildes (`Lácteos`, `Configuración`, etc.).
+- IANutri: reformulacion + sugerencias + asistente de cocina + historial persistente en Firestore.
 
 ## Cambio de arquitectura (antes vs ahora)
 - Antes: almacenamiento local temporal en navegador para alergenos.
@@ -24,8 +24,7 @@ dotnet restore
 dotnet run
 ```
 4. Abre:
-- `http://localhost:5113`
-- `https://localhost:7113`
+- `http://localhost:5188`
 
 ## Endpoints principales
 - `POST /api/Auth/Register`
@@ -33,8 +32,39 @@ dotnet run
 - `GET /api/Allergens/Catalog`
 - `GET /api/Allergens/User?email=usuario@dominio.com`
 - `PUT /api/Allergens/User`
+- `POST /api/IANutri/Reformulate`
+- `POST /api/IANutri/GenerateSuggestions`
+- `POST /api/IANutri/CookingAssistant`
+- `GET /api/IANutri/History?email=usuario@dominio.com`
+- `DELETE /api/IANutri/History?email=usuario@dominio.com`
+
+## Configuracion IANutri (GPT)
+Configura la API key en `appsettings.*.json` o con variable de entorno.
+
+`appsettings.json`:
+```json
+"IANutri": {
+  "BaseUrl": "https://models.inference.ai.azure.com",
+  "ApiKey": "",
+  "ReformulationModel": "gpt-4.1-nano",
+  "SuggestionModel": "gpt-4.1",
+  "CookingAssistantModel": "gpt-4.1",
+  "TimeoutSeconds": 60
+}
+```
+
+Variables de entorno soportadas (fallback):
+- `IANUTRI_API_KEY`
+- `GITHUB_MODELS_API_KEY`
+- `GITHUB_TOKEN`
+- `OPENAI_API_KEY`
+
+Recomendacion:
+- No commitear API keys reales en el repositorio.
 
 ## Documentacion detallada
+- Indice general: [docs/00-indice.md](docs/00-indice.md)
 - Setup completo: [docs/01-setup.md](docs/01-setup.md)
 - Estructura y flujos: [docs/02-estructura-y-flujos.md](docs/02-estructura-y-flujos.md)
 - MVC de alergenos y persistencia: [docs/03-alergenos-mvc-y-persistencia.md](docs/03-alergenos-mvc-y-persistencia.md)
+- IANutri (documentacion unificada): [docs/04-ianutri-arquitectura-y-flujo-e2e.md](docs/04-ianutri-arquitectura-y-flujo-e2e.md)

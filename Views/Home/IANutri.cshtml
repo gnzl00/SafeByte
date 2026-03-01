@@ -1,0 +1,122 @@
+@{
+  Layout = null;
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IANutri - SafeByte</title>
+  <link rel="stylesheet" href="/src/css/ianutri.css">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+</head>
+<body>
+  <a asp-controller="Home" asp-action="Home" id="back-button">Volver al Menu Principal</a>
+
+  <main class="ianutri-page">
+    <div class="top-grid">
+      <section class="ianutri-card intro-card">
+        <span class="eyebrow">SAFEBYTE AI - MENUS SEGUROS</span>
+        <h1>Asistente de Menus Seguros</h1>
+        <p>
+          Describe lo que quieres comer o los ingredientes que tienes. El asistente usara tus alergenos
+          guardados para proponerte opciones seguras y sustituciones cuando sea necesario.
+        </p>
+
+        <div class="allergen-panel">
+          <h2>Tus alergenos:</h2>
+          <div id="ianutri-allergens" class="chip-wrap">
+            <span class="chip chip-muted">Cargando...</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="ianutri-card planner-card">
+        <h2>Cuentanos tu plan</h2>
+        <p class="subtext">Mas detalle = mejores sugerencias</p>
+
+        <label class="input-label" for="ianutri-input">Que tienes en la nevera o que te apetece?</label>
+        <textarea
+          id="ianutri-input"
+          rows="6"
+          maxlength="600"
+          placeholder="Ej: Tengo pollo, arroz y verduras. Quiero algo rapido."></textarea>
+
+        <div class="mode-row">
+          <button type="button" class="mode-chip" data-mode="rapido-basico">Rapido y basico</button>
+          <button type="button" class="mode-chip" data-mode="cena-ligera">Cena ligera</button>
+          <button type="button" class="mode-chip" data-mode="menu-semanal">Menu semanal</button>
+        </div>
+
+        <div id="reformulation-box" class="reformulation-box hidden" aria-live="polite">
+          <h3>Asi he entendido tu peticion</h3>
+          <p id="reformulated-prompt"></p>
+        </div>
+
+        <div class="planner-footer">
+          <span id="char-counter">0/600</span>
+          <button id="generate-suggestions" type="button" class="primary-btn" disabled>Generar sugerencias</button>
+        </div>
+        <p id="planner-status" class="status-text"></p>
+      </section>
+    </div>
+
+    <section class="ianutri-card result-card">
+      <div class="result-header">
+        <h2>Resultado</h2>
+        <span class="chip chip-ready">Listo para ayudarte</span>
+      </div>
+
+      <div id="result-empty" class="result-empty">
+        <div class="pulse-dot"></div>
+        <p>Aqui apareceran las sugerencias personalizadas.</p>
+      </div>
+
+      <div id="result-summary" class="result-summary hidden"></div>
+      <div id="global-alerts" class="alert-list hidden"></div>
+      <div id="suggestions-list" class="suggestions-list"></div>
+      <p id="result-status" class="status-text"></p>
+    </section>
+
+    <section id="assistant-card" class="ianutri-card assistant-card hidden">
+      <div class="assistant-header">
+        <h2>Asistente de cocina</h2>
+        <button id="assistant-close" type="button" class="secondary-btn">Cerrar</button>
+      </div>
+
+      <p id="assistant-intro"></p>
+      <div class="assistant-grid">
+        <div>
+          <h3>Necesitaras</h3>
+          <ul id="assistant-items"></ul>
+        </div>
+        <div>
+          <h3>Paso a paso</h3>
+          <ol id="assistant-steps"></ol>
+        </div>
+      </div>
+      <div>
+        <h3>Notas de seguridad</h3>
+        <ul id="assistant-safety"></ul>
+      </div>
+      <p id="assistant-status" class="status-text"></p>
+    </section>
+
+    <section class="ianutri-card history-card">
+      <details id="history-details" class="history-details">
+        <summary class="history-summary">Historial de conversaciones</summary>
+        <div class="history-content">
+          <div class="history-header">
+            <p class="history-hint">Abre una conversacion anterior o limpia el historial guardado.</p>
+            <button id="clear-history" type="button" class="secondary-btn">Borrar historial</button>
+          </div>
+          <p id="history-status" class="status-text"></p>
+          <div id="history-list" class="history-list"></div>
+        </div>
+      </details>
+    </section>
+  </main>
+
+  <script src="/src/ventanas/ianutri.js"></script>
+</body>
+</html>

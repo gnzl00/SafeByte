@@ -3,6 +3,8 @@ using System.IO;
 using SafeByte.Data;
 using SafeByte.Services;
 
+LoadDotEnvIfExists(Path.Combine(Directory.GetCurrentDirectory(), ".env"));
+
 var builder = WebApplication.CreateBuilder(args);
 
 // 🔹 Configurar Firestore
@@ -50,18 +52,28 @@ builder.Services.AddCors(options =>
 
 // 🔹 MVC + API controllers
 builder.Services.AddControllersWithViews();
+builder.Services.Configure<IANutriOptions>(builder.Configuration.GetSection("IANutri"));
+builder.Services.AddHttpClient<IIANutriService, IANutriService>();
 
 var app = builder.Build();
 
-await SeedFirestoreAsync(app.Services, app.Configuration, app.Environment);
+try
+{
+    await SeedFirestoreAsync(app.Services, app.Configuration, app.Environment);
+}
+catch (Exception ex)
+{
+    var logger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("Startup");
+    logger.LogWarning(ex, "Firestore seed failed on startup. Continuing without seed.");
+}
 
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
+    app.UseHttpsRedirection();
 }
 
-app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
@@ -125,4 +137,45 @@ static async Task SeedFirestoreAsync(IServiceProvider services, IConfiguration c
 static string NormalizeEmail(string? email)
 {
     return email?.Trim().ToLowerInvariant() ?? string.Empty;
+}
+
+static void LoadDotEnvIfExists(string envFilePath)
+{
+    if (!File.Exists(envFilePath))
+    {
+        return;
+    }
+
+    foreach (var rawLine in File.ReadAllLines(envFilePath))
+    {
+        var line = rawLine.Trim();
+        if (string.IsNullOrWhiteSpace(line) || line.StartsWith('#'))
+        {
+            continue;
+        }
+
+        var separatorIndex = line.IndexOf('=');
+        if (separatorIndex <= 0)
+        {
+            continue;
+        }
+
+        var key = line[..separatorIndex].Trim();
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            continue;
+        }
+
+        var value = line[(separatorIndex + 1)..].Trim();
+        if ((value.StartsWith('"') && value.EndsWith('"')) ||
+            (value.StartsWith('\'') && value.EndsWith('\'')))
+        {
+            value = value[1..^1];
+        }
+
+        if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(key)))
+        {
+            Environment.SetEnvironmentVariable(key, value);
+        }
+    }
 }
