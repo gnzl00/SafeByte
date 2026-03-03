@@ -11,9 +11,22 @@
   <link rel="icon" type="image/x-icon" href="/favicon.ico" />
 </head>
 <body>
-  <a asp-controller="Home" asp-action="Home" id="back-button">Volver al Menu Principal</a>
+  <!-- Barra de navegación -->
+  <div class="navbar">
+    <div class="logo">Food DNA</div>
+    <ul class="nav-links">
+      <li><a asp-controller="Home" asp-action="Home" asp-fragment="welcome-section">Home</a></li>
+      <li><a asp-controller="Home" asp-action="Comidas">Comidas</a></li>
+      <li><a asp-controller="Home" asp-action="IANutri" class="active">IANutri</a></li>
+      <li><a asp-controller="Home" asp-action="Home" asp-fragment="contact-section">Contacta con Nosotros</a></li>
+      <li><a asp-controller="Home" asp-action="Home" asp-fragment="scanner-section">Scanner</a></li>
+      <li><a asp-controller="Home" asp-action="Home" asp-fragment="historial-section">Historial</a></li>
+      <li><a asp-controller="Home" asp-action="Home" asp-fragment="config-section">Configuración de Usuario</a></li>
+      <li><a asp-controller="Home" asp-action="Index">Cerrar Sesión</a></li>
+    </ul>
+  </div>
 
-  <main class="ianutri-page">
+  <main class="ianutri-page" style="padding: 20px;">
     <div class="top-grid">
       <section class="ianutri-card intro-card">
         <span class="eyebrow">SAFEBYTE AI - MENUS SEGUROS</span>

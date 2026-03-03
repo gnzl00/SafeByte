@@ -22,31 +22,50 @@
   box-sizing: border-box;
 }
 
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 50px;
+  background-color: #1e5631;
+  color: white;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.navbar .logo {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 30px;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: white;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+  color: #a8df65;
+}
+
 body {
   margin: 0;
-  padding: 20px;
+  padding: 0;
   font-family: 'Poppins', sans-serif;
   color: var(--sb-text);
   background:
     radial-gradient(circle at 10% 10%, #d3ead6 0%, transparent 35%),
     radial-gradient(circle at 90% 0%, #deebe2 0%, transparent 30%),
     var(--sb-bg);
-}
-
-#back-button {
-  display: inline-block;
-  margin-bottom: 14px;
-  padding: 11px 22px;
-  border-radius: 999px;
-  background: var(--sb-primary);
-  color: #fff;
-  text-decoration: none;
-  font-weight: 600;
-  transition: background-color 0.2s ease;
-}
-
-#back-button:hover {
-  background: var(--sb-primary-hover);
 }
 
 .ianutri-page {
