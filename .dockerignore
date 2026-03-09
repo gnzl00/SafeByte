@@ -1,0 +1,11 @@
+.git
+.vscode
+bin
+obj
+node_modules
+secrets
+.env
+.env.*
+!.env.example
+*.user
+*.suo

@@ -1,8 +1,11 @@
 const USER_STORAGE_KEY = "sb_user";
 const LOCAL_ALLERGENS_KEY = "alergenosSeleccionados";
 const CACHE_ALLERGENS_KEY = "sb_alergenos";
+const FAVORITES_KEY = "sb_favoritos";
 
 window.addEventListener("DOMContentLoaded", () => {
+  // Al llegar a la página de login, siempre limpiar sesión
+  clearUserSession();
   const signInButton = document.querySelector("#sign-in-btn");
   const signUpButton = document.querySelector("#sign-up-btn");
   const container = document.querySelector(".container");

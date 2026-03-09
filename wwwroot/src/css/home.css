@@ -26,6 +26,8 @@ body {
   list-style: none;
   display: flex;
   gap: 30px;
+  margin: 0;
+  padding: 0;
 }
 
 .nav-links a {
@@ -35,7 +37,8 @@ body {
   transition: color 0.3s ease;
 }
 
-.nav-links a:hover {
+.nav-links a:hover,
+.nav-links a.active {
   color: #a8df65;
 }
 
@@ -534,4 +537,79 @@ form button:hover {
 #scanner-section h2 {
   margin-top: 0;
   padding-top: 0;
+}
+
+/* Historial */
+.historial-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+#btn-limpiar-historial {
+  padding: 8px 18px;
+  font-size: 14px;
+  background-color: #c0392b;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  transition: background-color 0.3s ease;
+}
+
+#btn-limpiar-historial:hover {
+  background-color: #e74c3c;
+}
+
+#historial-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.historial-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: white;
+  border-radius: 12px;
+  padding: 12px 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.historial-item img {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  border-radius: 8px;
+  background: #f4f4f4;
+  flex-shrink: 0;
+}
+
+.historial-item-info {
+  flex: 1;
+}
+
+.historial-item-info strong {
+  display: block;
+  font-size: 16px;
+  color: #1e5631;
+}
+
+.historial-item-info span {
+  font-size: 13px;
+  color: #888;
+}
+
+.historial-vacio {
+  text-align: center;
+  color: #888;
+  font-size: 16px;
+  padding: 40px 0;
 }

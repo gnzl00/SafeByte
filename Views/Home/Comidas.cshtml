@@ -1,5 +1,6 @@
 @{
   Layout = null;
+  ViewData["ActivePage"] = "Comidas";
 }
 <!DOCTYPE html>
 <html lang="es">
@@ -8,18 +9,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="/src/css/comida.css">
+  <link rel="stylesheet" href="/src/css/navbar.css">
   <title>FOOD DNA - Comidas</title>
 </head>
 
 <body>
-  <!-- boton para ir a Home -->
-  <a asp-controller="Home" asp-action="Home" id="back-button">Volver al Menú Principal</a>
+  <!-- Barra de navegación -->
+  <partial name="_AppNavbar" />
 
+  <div class="page-content">
   <h1>Comidas Recomendadas</h1>
 
-  <!-- Barra de búsqueda -->
+  <!-- Barra de búsqueda y favoritos -->
   <div id="search-bar">
     <input type="text" id="search-input" placeholder="Buscar comidas...">
+    <button id="btn-favoritos" class="btn-favoritos">⭐ Mis Favoritos</button>
   </div>
 
   <!-- Container de las tarjetas de comidas -->
@@ -34,6 +38,8 @@
     <p><strong>Ingredientes:</strong> <span id="modal-ingredientes"></span></p>
     <p><strong>Receta:</strong> <span id="modal-receta"></span></p>
     <p><strong>Alérgenos:</strong> <span id="modal-alergenos"></span></p>
+    <button id="btn-compartir" class="btn-compartir">🔗 Compartir</button>
+    <span id="compartir-feedback" class="compartir-feedback"></span>
   </div>
 </div>
 
@@ -1922,6 +1928,8 @@
 
   ];
 </script>
+  </div>
 </body>
 
 </html>
+

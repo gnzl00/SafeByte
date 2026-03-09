@@ -1,27 +1,44 @@
 const USER_STORAGE_KEY = "sb_user";
 const LOCAL_ALLERGENS_KEY = "alergenosSeleccionados";
 const CACHE_ALLERGENS_KEY = "sb_alergenos";
+const HISTORIAL_KEY = "sb_historial";
 
 document.addEventListener("DOMContentLoaded", () => {
   setupNavigation();
   setupAllergenCards();
   setupSaveButton();
   loadAllergenPreferences();
+  renderHistorial();
 });
 
 function setupNavigation() {
   const navButtons = document.querySelectorAll(".nav-btn");
   const sections = document.querySelectorAll(".content-section");
 
-  navButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      const sectionId = button.getAttribute("data-section");
-      sections.forEach((section) => section.classList.add("hidden"));
+  function showSection(sectionId) {
+    sections.forEach((s) => s.classList.add("hidden"));
+    navButtons.forEach((b) => b.classList.remove("active"));
+    const target = document.getElementById(sectionId);
+    if (target) target.classList.remove("hidden");
+    const activeBtn = document.querySelector(`.nav-btn[data-section="${sectionId}"]`);
+    if (activeBtn) activeBtn.classList.add("active");
+  }
 
-      const section = document.getElementById(sectionId);
-      if (section) {
-        section.classList.remove("hidden");
-      }
+  // Show section from URL hash (e.g. coming from Comidas page)
+  const hash = window.location.hash.replace("#", "");
+  if (hash && document.getElementById(hash)) {
+    showSection(hash);
+  } else {
+    // Default: welcome section active
+    const homeBtn = document.querySelector('.nav-btn[data-section="welcome-section"]');
+    if (homeBtn) homeBtn.classList.add("active");
+  }
+
+  navButtons.forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      const sectionId = button.getAttribute("data-section");
+      showSection(sectionId);
     });
   });
 }
@@ -257,4 +274,58 @@ function showStatus(message, type) {
       messageNode.style.display = "none";
     }, 2200);
   }
+}
+
+// ── Historial de escaneos ────────────────────────────────────────────────────
+
+function getHistorialKey() {
+  const user = getCurrentUser();
+  return user ? `${HISTORIAL_KEY}_${user.email}` : HISTORIAL_KEY;
+}
+
+function getHistorial() {
+  try {
+    return JSON.parse(localStorage.getItem(getHistorialKey())) || [];
+  } catch {
+    return [];
+  }
+}
+
+function guardarEnHistorial(entrada) {
+  const historial = getHistorial();
+  // Evitar duplicados consecutivos del mismo código
+  if (historial.length > 0 && historial[0].codigo === entrada.codigo) return;
+  historial.unshift(entrada);
+  // Limitar a 50 entradas
+  if (historial.length > 50) historial.pop();
+  localStorage.setItem(getHistorialKey(), JSON.stringify(historial));
+  renderHistorial();
+}
+
+function limpiarHistorial() {
+  if (!confirm("¿Borrar todo el historial de escaneos?")) return;
+  localStorage.removeItem(getHistorialKey());
+  renderHistorial();
+}
+
+function renderHistorial() {
+  const lista = document.getElementById("historial-lista");
+  if (!lista) return;
+  const historial = getHistorial();
+  if (historial.length === 0) {
+    lista.innerHTML = "<p class=\"historial-vacio\">No hay escaneos registrados aún.</p>";
+    return;
+  }
+  lista.innerHTML = historial.map(e => `
+    <div class="historial-item">
+      ${e.imagen
+        ? `<img src="${e.imagen}" alt="${e.nombre}" onerror="this.style.display='none'">`
+        : `<img src="/src/media/placeholder.png" alt="sin imagen" style="display:none">`
+      }
+      <div class="historial-item-info">
+        <strong>${e.nombre}</strong>
+        <span>${e.codigo} &mdash; ${e.fecha}</span>
+      </div>
+    </div>
+  `).join("");
 }

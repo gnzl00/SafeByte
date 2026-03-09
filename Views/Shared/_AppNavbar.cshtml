@@ -1,0 +1,35 @@
+@{
+  var activePage = (ViewData["ActivePage"] as string ?? string.Empty).Trim();
+  var isHome = string.Equals(activePage, "Home", StringComparison.OrdinalIgnoreCase);
+  var isComidas = string.Equals(activePage, "Comidas", StringComparison.OrdinalIgnoreCase);
+  var isIANutri = string.Equals(activePage, "IANutri", StringComparison.OrdinalIgnoreCase);
+}
+<div class="navbar">
+  <div class="logo">Food DNA</div>
+  <ul class="nav-links">
+    <li>
+      <a asp-controller="Home" asp-action="Home" asp-fragment="welcome-section" data-section="welcome-section" class="nav-btn@(isHome ? " active" : "")">Home</a>
+    </li>
+    <li>
+      <a asp-controller="Home" asp-action="Comidas" class="@(isComidas ? "active" : string.Empty)">Comidas</a>
+    </li>
+    <li>
+      <a asp-controller="Home" asp-action="IANutri" class="@(isIANutri ? "active" : string.Empty)">IANutri</a>
+    </li>
+    <li>
+      <a asp-controller="Home" asp-action="Home" asp-fragment="contact-section" data-section="contact-section" class="nav-btn">Contacta con Nosotros</a>
+    </li>
+    <li>
+      <a asp-controller="Home" asp-action="Home" asp-fragment="scanner-section" data-section="scanner-section" class="nav-btn">Scanner</a>
+    </li>
+    <li>
+      <a asp-controller="Home" asp-action="Home" asp-fragment="historial-section" data-section="historial-section" class="nav-btn">Historial</a>
+    </li>
+    <li>
+      <a asp-controller="Home" asp-action="Home" asp-fragment="config-section" data-section="config-section" class="nav-btn">Configuracion de Usuario</a>
+    </li>
+    <li>
+      <a asp-controller="Home" asp-action="Index">Cerrar Sesion</a>
+    </li>
+  </ul>
+</div>

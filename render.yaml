@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: safebyte-backend
+    env: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    autoDeploy: true
+    healthCheckPath: /
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: FIRESTORE__PROJECTID
+        sync: false
+      - key: FIREBASE_CREDENTIALS
+        sync: false
+      - key: GITHUB_MODELS_API_KEY
+        sync: false
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false

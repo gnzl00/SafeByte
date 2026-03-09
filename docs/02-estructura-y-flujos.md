@@ -1,123 +1,98 @@
-# 02 - Estructura y flujos del proyecto
+﻿# 02 - Estructura y flujos del proyecto
 
 ## 1. Arquitectura general
 
-SafeByte esta dividido en 3 capas principales:
+SafeByte esta dividido en 3 capas:
 
-1. Vista (Razor + JS):
+1. Vista (Razor + JS)
 - `Views/Home/*.cshtml`
 - `wwwroot/src/ventanas/*.js`
 
-2. Controladores (API + MVC):
-- `Controllers/HomeController.cs` (vistas)
-- `Controllers/AuthController.cs` (registro/login)
-- `Controllers/AllergensController.cs` (preferencias de alergenos)
+2. Controladores (MVC + API)
+- `Controllers/HomeController.cs`
+- `Controllers/AuthController.cs`
+- `Controllers/AllergensController.cs`
+- `Controllers/IANutriController.cs`
 
-3. Datos (Firestore):
-- Coleccion `users`
-- Documento por usuario: `users/{email_normalizado}`
+3. Datos y servicios
+- Firestore (`users/{email}`)
+- `Services/*`
+- `Models/*`
 
 ## 2. Estructura de carpetas (resumen)
 
-- `Controllers`: endpoints MVC/API.
-- `Models`: modelos de dominio y DTO.
-- `Services`: utilidades (`PasswordHasher`, `AllergenCatalog`).
-- `Data`: utilidades legacy de seed en JSON.
-- `Views`: pantallas Razor.
-- `wwwroot`: JS/CSS/imagenes estaticas.
-- `docs`: documentacion tecnica.
+1. `Controllers`: endpoints MVC/API.
+2. `Models`: DTOs y modelos.
+3. `Services`: logica de dominio y utilidades.
+4. `Data`: seed local de usuarios.
+5. `Views`: pantallas Razor.
+6. `wwwroot`: JS/CSS/imagenes.
+7. `docs`: documentacion tecnica.
 
 ## 3. Archivos clave
 
-- `Program.cs`: configura Firestore, CORS, routing y seed.
-- `Controllers/AuthController.cs`: login/registro.
-- `Controllers/AllergensController.cs`: API para leer/guardar alergenos por usuario.
-- `Services/AllergenCatalog.cs`: catalogo y normalizacion de alergenos permitidos.
-- `wwwroot/src/ventanas/index.js`: login/registro en frontend.
-- `wwwroot/src/ventanas/Home.js`: carga y guardado de preferencias.
-- `wwwroot/src/ventanas/comida.js`: filtrado de comidas con alergenos del usuario.
+1. `Program.cs`: DI, Firestore, routing, CORS.
+2. `Controllers/AuthController.cs`: registro/login.
+3. `Controllers/AllergensController.cs`: preferencias de alergenos.
+4. `Controllers/IANutriController.cs`: reformulacion, sugerencias, asistente e historial.
+5. `Services/AllergenCatalog.cs`: catalogo y normalizacion.
+6. `Services/IANutriService.cs`: prompts, llamadas IA y saneo.
+7. `wwwroot/src/ventanas/index.js`: auth frontend.
+8. `wwwroot/src/ventanas/Home.js`: gestion de preferencias.
+9. `wwwroot/src/ventanas/comida.js`: filtrado de comidas.
+10. `wwwroot/src/ventanas/ianutri.js`: flujo completo IANutri.
 
-## 4. Modelo de datos en Firestore
+## 4. Modelo de datos Firestore
 
-Coleccion: `users`
+Coleccion principal:
+1. `users`
 
-Documento: ID = email en minusculas.
+Documento por usuario:
+1. ID = email normalizado.
+2. Campos principales:
+- `username`
+- `email`
+- `passwordHash`
+- `createdAt`
+- `allergens`
+- `allergensUpdatedAt`
 
-Campos principales:
-- `username` (string)
-- `email` (string)
-- `passwordHash` (string)
-- `createdAt` (timestamp)
-- `allergens` (array de string)
-- `allergensUpdatedAt` (timestamp)
-- `seeded` (bool opcional en usuarios de semilla)
+Subcoleccion de historial IA:
+1. `users/{email}/ianutriHistory/{historyId}`
 
-## 5. Flujo de registro
+## 5. Flujos funcionales
 
-1. Usuario rellena formulario en `Index`.
-2. Frontend llama `POST /api/Auth/Register`.
-3. Backend:
-- normaliza email
-- verifica que no exista
-- hashea password
-- crea usuario con `allergens: []`
-4. Frontend guarda sesion local (`sb_user`) y redirige a `/Home/Home`.
-
-## 6. Flujo de login
-
-1. Usuario hace login en `Index`.
-2. Frontend llama `POST /api/Auth/Login`.
-3. Backend valida password hash.
-4. Backend devuelve datos del usuario + alergenos guardados.
-5. Frontend guarda `sb_user` y cache de alergenos local.
-
-## 7. Flujo de preferencias de alergenos
-
-1. En `Home`, `Home.js` detecta usuario logueado.
-2. Si hay usuario:
-- llama `GET /api/Allergens/User?email=...`
-- pinta checkboxes con datos remotos
-3. Si no hay usuario (skip login):
-- usa almacenamiento local como fallback
-4. Al pulsar `Guardar preferencias`:
-- si logueado: `PUT /api/Allergens/User`
-- si invitado: guardado local
-
-## 8. Flujo de filtrado de comidas
-
-1. `comida.js` intenta cargar alergenos remotos del usuario.
-2. Si falla o no hay usuario, usa cache local.
-3. Filtra `comidas` excluyendo recetas con alergenos bloqueados.
-4. Aplica tambien texto de busqueda.
-
-## 9. Endpoints API actuales
-
-Auth:
+1. Registro/Login:
 - `POST /api/Auth/Register`
 - `POST /api/Auth/Login`
 
-Alergenos:
-- `GET /api/Allergens/Catalog`
-- `GET /api/Allergens/User?email=...`
+2. Alergenos:
+- `GET /api/Allergens/User`
 - `PUT /api/Allergens/User`
 
-## 10. Claves de almacenamiento local (frontend)
+3. IANutri:
+- `POST /api/IANutri/Reformulate`
+- `POST /api/IANutri/GenerateSuggestions`
+- `POST /api/IANutri/CookingAssistant`
+- `GET /api/IANutri/History`
+- `DELETE /api/IANutri/History`
 
-- `sb_user`: usuario actual (`email`, `username`)
-- `sb_alergenos`: cache local de alergenos
-- `alergenosSeleccionados`: clave legacy mantenida por compatibilidad
+## 6. Local storage (frontend)
 
-## 11. Limitaciones actuales (importante)
+1. `sb_user`: usuario actual.
+2. `sb_alergenos`: cache de alergenos.
+3. `alergenosSeleccionados`: clave legacy.
 
-1. No hay JWT/cookies de sesion de servidor.
-2. La API de alergenos identifica usuario por email recibido.
-3. Para un entorno productivo real:
-- añadir autenticacion robusta (JWT/Firebase Auth)
-- validar identidad en backend antes de permitir `PUT /api/Allergens/User`
+## 7. Limites actuales
 
-## 12. Nota de codificacion (UTF-8)
+1. No hay JWT ni sesion de servidor robusta.
+2. Parte de endpoints usan email del cliente como identificador.
 
-Para textos con tildes (`Configuración`, `Lácteos`, `alérgenos`):
-1. Mantener archivos de vista/script/documentación en UTF-8.
-2. Si aparece mojibake (`Configuración`, `Lácteos`), el frontend puede enviar valores rotos.
-3. El backend ahora tolera parte de estos casos, pero la corrección principal debe hacerse en los archivos fuente.
+Para produccion:
+1. autenticacion fuerte (token)
+2. autorizacion por identidad validada en backend
+
+## 8. Referencias de detalle
+
+1. `docs/03-alergenos-mvc-y-persistencia.md`
+2. `docs/04-ianutri-arquitectura-y-flujo-e2e.md`
