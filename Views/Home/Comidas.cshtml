@@ -1,5 +1,6 @@
 @{
   Layout = null;
+  ViewData["ActivePage"] = "Comidas";
 }
 <!DOCTYPE html>
 <html lang="es">
@@ -8,24 +9,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="/src/css/comida.css">
+  <link rel="stylesheet" href="/src/css/navbar.css">
   <title>FOOD DNA - Comidas</title>
 </head>
 
 <body>
   <!-- Barra de navegación -->
-  <div class="navbar">
-    <div class="logo">Food DNA</div>
-    <ul class="nav-links">
-      <li><a asp-controller="Home" asp-action="Home" asp-fragment="welcome-section">Home</a></li>
-      <li><a asp-controller="Home" asp-action="Comidas" class="active">Comidas</a></li>
-      <li><a asp-controller="Home" asp-action="IANutri">IANutri</a></li>
-      <li><a asp-controller="Home" asp-action="Home" asp-fragment="contact-section">Contacta con Nosotros</a></li>
-      <li><a asp-controller="Home" asp-action="Home" asp-fragment="scanner-section">Scanner</a></li>
-      <li><a asp-controller="Home" asp-action="Home" asp-fragment="historial-section">Historial</a></li>
-      <li><a asp-controller="Home" asp-action="Home" asp-fragment="config-section">Configuración de Usuario</a></li>
-      <li><a asp-controller="Home" asp-action="Index">Cerrar Sesión</a></li>
-    </ul>
-  </div>
+  <partial name="_AppNavbar" />
 
   <div class="page-content">
   <h1>Comidas Recomendadas</h1>
@@ -1942,3 +1932,4 @@
 </body>
 
 </html>
+

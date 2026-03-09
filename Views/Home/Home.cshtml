@@ -1,5 +1,6 @@
 @{
   Layout = null;
+  ViewData["ActivePage"] = "Home";
 }
 <!DOCTYPE html>
 <html lang="es">
@@ -8,6 +9,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Scanner - SafeByte</title>
   <link rel="stylesheet" href="/src/css/home.css" />
+  <link rel="stylesheet" href="/src/css/navbar.css" />
   <link rel="icon" type="image/x-icon" href="/favicon.ico" />
 
   <style>
@@ -52,19 +54,7 @@
 </head>
 <body>
   <!-- Barra de navegación -->
-  <div class="navbar">
-    <div class="logo">Food DNA</div>
-    <ul class="nav-links">
-      <li><a href="#" data-section="welcome-section" class="nav-btn">Home</a></li>
-      <li><a asp-controller="Home" asp-action="Comidas">Comidas</a></li>
-      <li><a asp-controller="Home" asp-action="IANutri">IANutri</a></li>
-      <li><a href="#" data-section="contact-section" class="nav-btn">Contacta con Nosotros</a></li>
-      <li><a href="#" data-section="scanner-section" class="nav-btn">Scanner</a></li>
-      <li><a href="#" data-section="historial-section" class="nav-btn">Historial</a></li>
-      <li><a href="#" data-section="config-section" class="nav-btn">Configuración de Usuario</a></li>
-      <li><a asp-controller="Home" asp-action="Index">Cerrar Sesión</a></li>
-    </ul>
-  </div>
+  <partial name="_AppNavbar" />
 
   <!-- Sección del scanner -->
   <section id="scanner-section" class="content-section hidden">
@@ -273,3 +263,5 @@
   </script>
 </body>
 </html>
+
+

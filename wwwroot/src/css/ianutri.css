@@ -620,7 +620,11 @@ ol {
 
 @media (max-width: 860px) {
   body {
-    padding: 14px;
+    padding: 0;
+  }
+
+  .ianutri-page {
+    padding: 14px !important;
   }
 
   .top-grid {
