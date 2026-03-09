@@ -154,11 +154,11 @@ Error si hay valores invalidos:
 5. Al guardar, llama `PUT /api/Allergens/User`.
 6. `comida.js` vuelve a cargar preferencias y filtra recetas.
 
-### Caso B: modo invitado (skip login)
+### Caso B: acceso sin autenticacion
 
-1. No hay usuario en `sb_user`.
-2. `Home.js` usa cache local para no romper UX.
-3. Al guardar, solo se guarda local (no Firestore).
+1. El flujo de pantalla inicial ya no ofrece `Skip Login`.
+2. Si no hay usuario valido en `sb_user`, no se considera un flujo soportado para persistencia remota.
+3. Para guardar en Firestore, el usuario debe iniciar sesion.
 
 ## 7. Archivos tocados y para que sirve cada uno
 
@@ -171,7 +171,7 @@ Backend:
 - `Program.cs`: seed incluye campos de alergenos.
 
 Frontend:
-- `wwwroot/src/ventanas/index.js`: guarda sesion del usuario para identificar preferencias.
+- `wwwroot/src/ventanas/index.js`: guarda sesion del usuario para identificar preferencias (sin modo invitado desde pantalla inicial).
 - `wwwroot/src/ventanas/Home.js`: carga y guarda preferencias en backend.
 - `wwwroot/src/ventanas/comida.js`: filtra recetas con preferencias persistidas.
 - `Views/Home/Home.cshtml`: limpia JS inline duplicado y delega al script principal.

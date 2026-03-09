@@ -71,6 +71,31 @@ Debes hacerlo en el repo/app movil:
 4. Despliega.
 5. Revisa logs de arranque y health endpoint (`/`).
 
+### 2.7 Si `git push origin main` es rechazado (non-fast-forward)
+
+1. Trae cambios remotos:
+   `git fetch origin`
+2. Actualiza tu `main` local:
+   `git checkout main`
+   `git pull --rebase origin main`
+3. Integra tu rama de trabajo:
+   `git merge --no-ff <tu-rama>`
+4. Sube `main`:
+   `git push origin main`
+
+Alternativa de prueba rapida:
+1. Subir rama al fork y desplegar esa rama en Render.
+
+### 2.8 Campos Render que no debes olvidar
+
+En `Advanced`:
+1. `Health Check Path`: `/`
+2. `Docker Build Context Directory`: `.`
+3. `Dockerfile Path`: `./Dockerfile`
+
+Si `Dockerfile Path` apunta mal, Render falla con:
+1. `failed to read dockerfile: no such file or directory`
+
 ## 3. Verificacion recomendada post-despliegue
 
 1. `POST /api/Auth/Register`.

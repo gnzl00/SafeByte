@@ -1,33 +1,36 @@
 # SafeByte
 
-Aplicacion web ASP.NET Core MVC + API para recomendar comidas seguras segun alergenos del usuario.
+Aplicacion web ASP.NET Core MVC + API para recomendaciones de comidas seguras segun alergenos.
 
-## Stack real del backend
+## Stack real
 
 - Backend: ASP.NET Core 8 (`net8.0`, C#).
 - Persistencia: Firebase Firestore (`Google.Cloud.Firestore`).
 - Frontend: Razor + JavaScript en `wwwroot/src/ventanas`.
-- `package.json`: utilitario opcional para lanzar comandos `dotnet` desde npm. No es el runtime principal del backend.
+- IA (por defecto): GitHub Models.
+- `package.json`: scripts opcionales para ejecutar comandos `dotnet`; no es el runtime principal.
 
-## Configuracion segura (produccion)
+## Estado funcional actual
 
-Variables de entorno requeridas:
+- El backend no usa archivo local de Firebase (`secrets/service-account.json`).
+- Firebase se inicializa por `FIREBASE_CREDENTIALS` (JSON completo) o por ADC.
+- El servicio escucha puerto cloud dinamico por `PORT` en `0.0.0.0:{PORT}`.
+- CORS en produccion se controla por `CORS_ALLOWED_ORIGINS`.
+- El login es obligatorio (se elimino el boton `Skip Login`).
+
+## Variables de entorno
+
+Requeridas:
 
 - `FIRESTORE__PROJECTID`
-- `FIREBASE_CREDENTIALS` (JSON completo de Service Account en una sola variable)
-- `GITHUB_MODELS_API_KEY` o `GITHUB_TOKEN` (prioritaria para IANutri)
-- `CORS_ALLOWED_ORIGINS` (recomendado en produccion, separado por comas)
+- `FIREBASE_CREDENTIALS`
+- `GITHUB_MODELS_API_KEY` o `GITHUB_TOKEN`
+- `CORS_ALLOWED_ORIGINS`
 
-Variables compatibles secundarias para API key:
+Compatibilidad:
 
 - `IANUTRI_API_KEY`
-- `OPENAI_API_KEY` (si cambias endpoint a OpenAI)
-
-Notas:
-
-- El backend ya no lee credenciales Firebase desde `secrets/service-account.json`.
-- El backend soporta puerto dinamico cloud con `PORT` y escucha en `0.0.0.0:{PORT}`.
-- En produccion, CORS se controla por `CORS_ALLOWED_ORIGINS`; en desarrollo se permite `AllowAnyOrigin`.
+- `OPENAI_API_KEY` (solo si cambias `IANutri:BaseUrl` a OpenAI)
 
 ## Ejecucion local
 
@@ -37,9 +40,32 @@ dotnet build
 dotnet run
 ```
 
-URL local de desarrollo (por `launchSettings.json`):
+Si en local aparece `Your default credentials were not found`, define `FIREBASE_CREDENTIALS` antes de ejecutar.
+
+PowerShell:
+
+```powershell
+$env:FIRESTORE__PROJECTID = "fooddna-b91c1"
+$env:FIREBASE_CREDENTIALS = (Get-Content .\service-account.json -Raw | ConvertFrom-Json | ConvertTo-Json -Compress)
+$env:GITHUB_MODELS_API_KEY = "tu_key"
+$env:CORS_ALLOWED_ORIGINS = "http://localhost:5188"
+dotnet run
+```
+
+URL local por perfil de lanzamiento:
 
 - `http://localhost:5188`
+
+## Despliegue rapido en Render
+
+1. Asegura `Dockerfile` en la raiz del repo.
+2. Crea `Web Service` con runtime `Docker`.
+3. Configura:
+- `Health Check Path`: `/`
+- `Docker Build Context Directory`: `.`
+- `Dockerfile Path`: `./Dockerfile`
+4. Carga variables de entorno listadas arriba.
+5. Deploy.
 
 ## Scripts npm opcionales
 
@@ -50,32 +76,12 @@ npm run start
 npm run publish
 ```
 
-Estos scripts solo envuelven comandos `dotnet`.
-
-## Archivos de despliegue incluidos
-
-- `Dockerfile`
-- `render.yaml`
-- `DEPLOY.md`
-- `.env.example`
-
-## Endpoints principales
-
-- `POST /api/Auth/Register`
-- `POST /api/Auth/Login`
-- `GET /api/Allergens/Catalog`
-- `GET /api/Allergens/User?email=usuario@dominio.com`
-- `PUT /api/Allergens/User`
-- `POST /api/IANutri/Reformulate`
-- `POST /api/IANutri/GenerateSuggestions`
-- `POST /api/IANutri/CookingAssistant`
-- `GET /api/IANutri/History?email=usuario@dominio.com`
-- `DELETE /api/IANutri/History?email=usuario@dominio.com`
-
 ## Documentacion
 
 - Indice: [docs/00-indice.md](docs/00-indice.md)
-- Setup: [docs/01-setup.md](docs/01-setup.md)
+- Setup local/cloud: [docs/01-setup.md](docs/01-setup.md)
 - Estructura y flujos: [docs/02-estructura-y-flujos.md](docs/02-estructura-y-flujos.md)
-- Persistencia alergenos: [docs/03-alergenos-mvc-y-persistencia.md](docs/03-alergenos-mvc-y-persistencia.md)
+- Persistencia de alergenos: [docs/03-alergenos-mvc-y-persistencia.md](docs/03-alergenos-mvc-y-persistencia.md)
 - IANutri: [docs/04-ianutri-arquitectura-y-flujo-e2e.md](docs/04-ianutri-arquitectura-y-flujo-e2e.md)
+- Pendientes manuales: [docs/05-pendientes-despliegue-cloud.md](docs/05-pendientes-despliegue-cloud.md)
+- Checklist Render: [docs/06-render-checklist.md](docs/06-render-checklist.md)
