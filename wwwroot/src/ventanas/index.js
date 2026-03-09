@@ -9,7 +9,6 @@ window.addEventListener("DOMContentLoaded", () => {
   const signInButton = document.querySelector("#sign-in-btn");
   const signUpButton = document.querySelector("#sign-up-btn");
   const container = document.querySelector(".container");
-  const skipLoginButton = document.querySelector("#skip-login");
 
   signUpButton.addEventListener("click", () => {
     container.classList.add("sign-up-mode");
@@ -52,10 +51,6 @@ window.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  skipLoginButton.addEventListener("click", () => {
-    clearUserSession();
-    redirectToHome();
-  });
 });
 
 function redirectToHome() {
