@@ -1,42 +1,71 @@
-﻿# 00 - Indice de documentacion
+# 00 - Indice de documentacion
 
 Ultima actualizacion: 2026-03-09
 
-Este indice centraliza la documentacion funcional y tecnica del proyecto.
+Este indice organiza la documentacion tecnica, funcional y operativa del proyecto SafeByte.
 
-## 1. Documentos base
+## 1. Lectura recomendada por perfil
 
-1. Setup general: `docs/01-setup.md`
-2. Estructura y flujos del proyecto: `docs/02-estructura-y-flujos.md`
-3. Persistencia de alergenos (MVC): `docs/03-alergenos-mvc-y-persistencia.md`
-4. Despliegue cloud seguro: `DEPLOY.md`
-5. Pendientes manuales de despliegue: `docs/05-pendientes-despliegue-cloud.md`
-6. Checklist Render paso a paso: `docs/06-render-checklist.md`
+## 1.1 Si vas a desarrollar codigo
 
-## 2. Documentacion unificada de IANutri
+1. `README.md`
+2. `docs/01-setup.md`
+3. `docs/02-estructura-y-flujos.md`
+4. `docs/03-alergenos-mvc-y-persistencia.md`
+5. `docs/04-ianutri-arquitectura-y-flujo-e2e.md`
 
-1. Documento maestro IANutri: `docs/04-ianutri-arquitectura-y-flujo-e2e.md`
+## 1.2 Si vas a desplegar y operar
 
-Incluye en un solo archivo:
-1. arquitectura y componentes
-2. flujo extremo a extremo
-3. contratos API
-4. frontend y UX
-5. operacion y troubleshooting
-6. bitacora de implementacion
+1. `README.md`
+2. `DEPLOY.md`
+3. `docs/06-render-checklist.md`
+4. `docs/05-pendientes-despliegue-cloud.md`
 
-## 3. Mapa rapido de codigo
+## 1.3 Si necesitas entender decisiones tecnicas
 
-Backend:
-1. `Program.cs`
-2. `Controllers/IANutriController.cs`
-3. `Services/IIANutriService.cs`
-4. `Services/IANutriService.cs`
-5. `Services/IANutriOptions.cs`
-6. `Models/IANutriRequests.cs`
-7. `Models/IANutriResponses.cs`
+1. `README.md` (vision y decisiones globales)
+2. `docs/02-estructura-y-flujos.md` (arquitectura por capas)
+3. `docs/03-alergenos-mvc-y-persistencia.md` (dominio de seguridad alimentaria)
+4. `docs/04-ianutri-arquitectura-y-flujo-e2e.md` (modulo IA y tradeoffs)
 
-Frontend:
-1. `Views/Home/IANutri.cshtml`
-2. `wwwroot/src/ventanas/ianutri.js`
-3. `wwwroot/src/css/ianutri.css`
+## 2. Mapa completo de documentos
+
+1. `README.md`
+- Resumen ejecutivo, stack, decisiones tecnicas, estado actual y rutas de entrada.
+
+2. `docs/01-setup.md`
+- Onboarding local completo, prerequisitos, variables y troubleshooting.
+
+3. `docs/02-estructura-y-flujos.md`
+- Arquitectura de sistema, capas, flujos E2E y deuda tecnica.
+
+4. `docs/03-alergenos-mvc-y-persistencia.md`
+- Modelo de alergenos, contratos API, normalizacion y persistencia en Firestore.
+
+5. `docs/04-ianutri-arquitectura-y-flujo-e2e.md`
+- Pipeline IANutri completo: prompts, parseo, fallback, historial y UX.
+
+6. `DEPLOY.md`
+- Guia de despliegue cloud multi proveedor con seguridad minima.
+
+7. `docs/05-pendientes-despliegue-cloud.md`
+- Pendientes manuales fuera de codigo y roadmap tecnico.
+
+8. `docs/06-render-checklist.md`
+- Checklist operativo corto para primer deploy en Render.
+
+## 3. Convenciones de documentacion del proyecto
+
+1. Se documenta el estado real del codigo, no un estado ideal.
+2. Se explican decisiones con motivo y coste, no solo "que hace".
+3. Se diferencian claramente:
+- implementado,
+- limitaciones,
+- proximos pasos.
+4. Todas las fechas se expresan en formato ISO (`YYYY-MM-DD`).
+
+## 4. Cambios recientes reflejados en la documentacion
+
+1. Menu de usuario en navbar usando `username` y `email` de `sb_user`.
+2. Endurecimiento del scanner movil para evitar bloqueos por streams abiertos.
+3. Consolidacion de decision tecnica sobre GitHub Models como proveedor IA por defecto.
