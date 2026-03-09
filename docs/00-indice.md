@@ -1,6 +1,6 @@
 ﻿# 00 - Indice de documentacion
 
-Ultima actualizacion: 2026-02-25
+Ultima actualizacion: 2026-03-09
 
 Este indice centraliza la documentacion funcional y tecnica del proyecto.
 
@@ -11,6 +11,7 @@ Este indice centraliza la documentacion funcional y tecnica del proyecto.
 3. Persistencia de alergenos (MVC): `docs/03-alergenos-mvc-y-persistencia.md`
 4. Despliegue cloud seguro: `DEPLOY.md`
 5. Pendientes manuales de despliegue: `docs/05-pendientes-despliegue-cloud.md`
+6. Checklist Render paso a paso: `docs/06-render-checklist.md`
 
 ## 2. Documentacion unificada de IANutri
 

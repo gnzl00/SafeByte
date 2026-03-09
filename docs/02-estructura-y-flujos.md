@@ -83,6 +83,10 @@ Subcoleccion de historial IA:
 2. `sb_alergenos`: cache de alergenos.
 3. `alergenosSeleccionados`: clave legacy.
 
+Nota:
+1. Se elimino el acceso por `Skip Login` en la pantalla inicial.
+2. El flujo oficial es autenticado (registro/login).
+
 ## 7. Limites actuales
 
 1. No hay JWT ni sesion de servidor robusta.
@@ -96,3 +100,5 @@ Para produccion:
 
 1. `docs/03-alergenos-mvc-y-persistencia.md`
 2. `docs/04-ianutri-arquitectura-y-flujo-e2e.md`
+3. `DEPLOY.md`
+4. `docs/06-render-checklist.md`

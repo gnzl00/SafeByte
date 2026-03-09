@@ -1,6 +1,6 @@
 ﻿# 04 - IANutri (documentacion unificada)
 
-Ultima actualizacion: 2026-02-25
+Ultima actualizacion: 2026-03-09
 
 Este documento unifica arquitectura, flujo funcional, contratos API, frontend/UX, operacion y bitacora tecnica del modulo IANutri.
 
@@ -217,6 +217,10 @@ Bloque `IANutri` en `appsettings`:
   "TimeoutSeconds": 60
 }
 ```
+
+Proveedor por defecto:
+1. GitHub Models (`https://models.github.ai/inference`).
+2. Si cambias a OpenAI, ajusta `BaseUrl` y define `OPENAI_API_KEY`.
 
 Fallback de API key:
 1. `GITHUB_MODELS_API_KEY`
