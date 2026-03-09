@@ -105,7 +105,7 @@ function persistUserSession(user) {
 
   const normalizedUser = {
     email: user.email.trim().toLowerCase(),
-    username: typeof user.username === "string" ? user.username : ""
+    username: typeof user.username === "string" ? user.username.trim() : ""
   };
 
   localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(normalizedUser));
