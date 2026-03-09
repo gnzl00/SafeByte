@@ -209,7 +209,7 @@ Campos de historial relevantes:
 Bloque `IANutri` en `appsettings`:
 ```json
 "IANutri": {
-  "BaseUrl": "https://models.inference.ai.azure.com",
+  "BaseUrl": "https://models.github.ai/inference",
   "ApiKey": "",
   "ReformulationModel": "gpt-4.1-nano",
   "SuggestionModel": "gpt-4.1",
@@ -219,11 +219,11 @@ Bloque `IANutri` en `appsettings`:
 ```
 
 Fallback de API key:
-1. `IANutri:ApiKey`
-2. `IANUTRI_API_KEY`
-3. `GITHUB_MODELS_API_KEY`
-4. `GITHUB_TOKEN`
-5. `OPENAI_API_KEY`
+1. `GITHUB_MODELS_API_KEY`
+2. `GITHUB_TOKEN`
+3. `IANutri:ApiKey`
+4. `IANUTRI_API_KEY`
+5. `OPENAI_API_KEY` (si usas endpoint OpenAI)
 
 ## 8. Troubleshooting rapido
 
@@ -232,10 +232,10 @@ Fallback de API key:
 - El servicio ya prueba variantes con/sin `openai/`.
 
 2. `No se encontro API key para IANutri`:
-- Configurar `IANutri:ApiKey` o variables de entorno.
+- Configurar `GITHUB_MODELS_API_KEY`/`GITHUB_TOKEN` o `IANutri:ApiKey`.
 
 3. `Host desconocido` (Firestore):
-- Revisar red, DNS, credenciales y `Firestore:ProjectId`.
+- Revisar red, DNS, `FIREBASE_CREDENTIALS` y `Firestore:ProjectId`.
 
 4. `address already in use`:
 - Cerrar instancia previa o cambiar `applicationUrl`.

@@ -1,8 +1,32 @@
 bin/
 obj/
 node_modules/
+publish/
+artifacts/
+TestResults/
 .DS_Store
 .vscode/
-secrets/
-*firebase-adminsdk*.json
+
+# Local environment files
 .env
+.env.*
+!.env.example
+
+# Local appsettings overlays (optional)
+appsettings.Local.json
+appsettings.*.local.json
+appsettings.secrets.json
+appsettings.*.secrets.json
+
+# Firebase / cloud credentials
+secrets/
+**/secrets/
+service-account.json
+service-account*.json
+*firebase-adminsdk*.json
+firebase-credentials*.json
+google-credentials*.json
+gcp-service-account*.json
+*.p12
+*.pem
+*.key

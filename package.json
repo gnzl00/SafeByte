@@ -1,10 +1,14 @@
 {
   "name": "safebyte",
   "version": "1.0.0",
-  "description": "Buenos días vamos a empezar con el desarrollo de la solución al problema planteado",
+  "description": "Helper scripts for ASP.NET Core backend commands",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "dotnet run --no-launch-profile",
+    "dev": "dotnet watch run",
+    "build": "dotnet build",
+    "publish": "dotnet publish -c Release -o ./publish",
+    "test": "dotnet test"
   },
   "repository": {
     "type": "git",

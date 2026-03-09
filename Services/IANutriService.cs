@@ -355,11 +355,14 @@ public class IANutriService : IIANutriService
         CancellationToken cancellationToken)
     {
         var options = _options.Value;
+        var preferGitHubModels = IsGitHubModelsEndpoint(options.BaseUrl);
         var apiKey = ResolveApiKey(options);
         if (string.IsNullOrWhiteSpace(apiKey))
         {
-            throw new InvalidOperationException(
-                "No se encontro API key para IANutri. Configura IANutri:ApiKey o variables de entorno GITHUB_TOKEN/GITHUB_MODELS_API_KEY.");
+            var expected = preferGitHubModels
+                ? "GITHUB_MODELS_API_KEY o GITHUB_TOKEN"
+                : "OPENAI_API_KEY";
+            throw new InvalidOperationException($"No se encontro API key para IANutri. Configura {expected}.");
         }
 
         var timeoutSeconds = Math.Clamp(options.TimeoutSeconds, 10, 180);
@@ -383,7 +386,15 @@ public class IANutriService : IIANutriService
         {
             using var request = new HttpRequestMessage(HttpMethod.Post, completionsUrl);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
-            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            if (preferGitHubModels)
+            {
+                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github+json"));
+                request.Headers.TryAddWithoutValidation("X-GitHub-Api-Version", "2022-11-28");
+            }
+            else
+            {
+                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            }
             request.Content = JsonContent.Create(new
             {
                 model,
@@ -426,17 +437,28 @@ public class IANutriService : IIANutriService
 
     private static string ResolveApiKey(IANutriOptions options)
     {
+        var preferGitHubModels = IsGitHubModelsEndpoint(options.BaseUrl);
+
         var configuredApiKey = ResolveConfiguredApiKey(options.ApiKey);
         if (!string.IsNullOrWhiteSpace(configuredApiKey))
         {
             return configuredApiKey;
         }
 
+        if (preferGitHubModels)
+        {
+            return FirstNonEmpty(
+                Environment.GetEnvironmentVariable("GITHUB_MODELS_API_KEY"),
+                Environment.GetEnvironmentVariable("GITHUB_TOKEN"),
+                Environment.GetEnvironmentVariable("IANUTRI_API_KEY"),
+                Environment.GetEnvironmentVariable("OPENAI_API_KEY"));
+        }
+
         return FirstNonEmpty(
+            Environment.GetEnvironmentVariable("OPENAI_API_KEY"),
             Environment.GetEnvironmentVariable("IANUTRI_API_KEY"),
             Environment.GetEnvironmentVariable("GITHUB_MODELS_API_KEY"),
-            Environment.GetEnvironmentVariable("GITHUB_TOKEN"),
-            Environment.GetEnvironmentVariable("OPENAI_API_KEY"));
+            Environment.GetEnvironmentVariable("GITHUB_TOKEN"));
     }
 
     private static string ResolveConfiguredApiKey(string? configuredValue)
@@ -563,7 +585,7 @@ public class IANutriService : IIANutriService
     {
         if (string.IsNullOrWhiteSpace(baseUrl))
         {
-            return "https://models.inference.ai.azure.com/chat/completions";
+            return "https://models.github.ai/inference/chat/completions";
         }
 
         var trimmed = baseUrl.Trim().TrimEnd('/');
@@ -573,6 +595,16 @@ public class IANutriService : IIANutriService
         }
 
         return $"{trimmed}/chat/completions";
+    }
+
+    private static bool IsGitHubModelsEndpoint(string? baseUrl)
+    {
+        if (string.IsNullOrWhiteSpace(baseUrl))
+        {
+            return true;
+        }
+
+        return baseUrl.Contains("models.github.ai", StringComparison.OrdinalIgnoreCase);
     }
 
     private static string ExtractAssistantMessage(string payload)

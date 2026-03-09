@@ -9,6 +9,8 @@ Este indice centraliza la documentacion funcional y tecnica del proyecto.
 1. Setup general: `docs/01-setup.md`
 2. Estructura y flujos del proyecto: `docs/02-estructura-y-flujos.md`
 3. Persistencia de alergenos (MVC): `docs/03-alergenos-mvc-y-persistencia.md`
+4. Despliegue cloud seguro: `DEPLOY.md`
+5. Pendientes manuales de despliegue: `docs/05-pendientes-despliegue-cloud.md`
 
 ## 2. Documentacion unificada de IANutri
 

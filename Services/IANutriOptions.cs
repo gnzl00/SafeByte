@@ -2,7 +2,7 @@ namespace SafeByte.Services;
 
 public class IANutriOptions
 {
-    public string BaseUrl { get; set; } = "https://models.inference.ai.azure.com";
+    public string BaseUrl { get; set; } = "https://models.github.ai/inference";
     public string ApiKey { get; set; } = string.Empty;
     public string ReformulationModel { get; set; } = "gpt-4.1-nano";
     public string SuggestionModel { get; set; } = "gpt-4.1";

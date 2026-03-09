@@ -1,11 +1,11 @@
-﻿# 01 - Setup
+# 01 - Setup
 
 ## 1. Requisitos
 
 Obligatorio:
 1. `.NET 8 SDK`
 2. Proyecto Firebase con Firestore habilitado
-3. JSON de Service Account de Firebase
+3. API key para IANutri (`GITHUB_MODELS_API_KEY` o `GITHUB_TOKEN`)
 
 Opcional:
 1. `git`
@@ -18,73 +18,34 @@ git clone <url-del-repo>
 cd SafeByte
 ```
 
-## 3. Instalar .NET 8
+## 3. Configurar variables de entorno
 
-Windows (PowerShell):
-```powershell
-winget install Microsoft.DotNet.SDK.8
-dotnet --version
+1. Copia `.env.example` a `.env` solo para local (no lo subas a git).
+2. Configura como minimo:
+
+- `FIRESTORE__PROJECTID`
+- `FIREBASE_CREDENTIALS` (JSON completo de Service Account)
+- `GITHUB_MODELS_API_KEY` (o `GITHUB_TOKEN`)
+- `CORS_ALLOWED_ORIGINS` (en produccion, ej. `https://tu-frontend.com`)
+
+Ejemplo de `FIREBASE_CREDENTIALS`:
+
+```text
+{"type":"service_account","project_id":"tu-project-id","private_key_id":"...","private_key":"-----BEGIN PRIVATE KEY-----\\n...\\n-----END PRIVATE KEY-----\\n","client_email":"...","client_id":"...","token_uri":"https://oauth2.googleapis.com/token"}
 ```
 
-macOS (Homebrew):
-```bash
-brew update
-brew install dotnet@8
-dotnet --version
-```
-
-Linux (Ubuntu/Debian):
-```bash
-sudo apt-get update
-sudo apt-get install -y dotnet-sdk-8.0
-dotnet --version
-```
-
-## 4. Configurar Firestore
-
-1. Firebase Console -> proyecto
-2. `Firestore Database` -> crear base
-3. Crear/descargar Service Account key
-
-## 5. Guardar credenciales
-
-1. Crear carpeta `secrets` si no existe.
-2. Guardar archivo en:
-- `secrets/service-account.json`
-
-Importante:
-1. No subir este archivo a git.
-2. Alternativa: usar variable `GOOGLE_APPLICATION_CREDENTIALS`.
-
-## 6. Configurar `appsettings`
+## 4. Configurar appsettings
 
 `appsettings.json`:
+
 ```json
 {
   "Firestore": {
     "ProjectId": "tu-project-id"
-  }
-}
-```
-
-`appsettings.Development.json`:
-```json
-{
-  "Firestore": {
-    "CredentialsPath": "secrets/service-account.json",
-    "SeedOnStartup": false
-  }
-}
-```
-
-## 7. Configurar IANutri
-
-`appsettings.json` o `appsettings.Development.json`:
-```json
-{
+  },
   "IANutri": {
-    "BaseUrl": "https://models.inference.ai.azure.com",
-    "ApiKey": "",
+    "BaseUrl": "https://models.github.ai/inference",
+    "ApiKey": "${GITHUB_MODELS_API_KEY}",
     "ReformulationModel": "gpt-4.1-nano",
     "SuggestionModel": "gpt-4.1",
     "CookingAssistantModel": "gpt-4.1",
@@ -93,39 +54,50 @@ Importante:
 }
 ```
 
-Variables de entorno soportadas para API key:
-1. `IANUTRI_API_KEY`
-2. `GITHUB_MODELS_API_KEY`
-3. `GITHUB_TOKEN`
-4. `OPENAI_API_KEY`
-
-## 8. Restaurar y ejecutar
+## 5. Restaurar y ejecutar
 
 ```bash
 dotnet restore
+dotnet build
 dotnet run
 ```
 
-URL local por defecto (`launchSettings.json`):
+Si te aparece `Your default credentials were not found`, define `FIREBASE_CREDENTIALS` antes de `dotnet run`.
+
+PowerShell (ejemplo):
+
+```powershell
+$env:FIREBASE_CREDENTIALS = (Get-Content .\service-account.json -Raw | ConvertFrom-Json | ConvertTo-Json -Compress)
+dotnet run
+```
+
+URL local de desarrollo (launch profile):
 1. `http://localhost:5188`
 
-## 9. Verificacion minima
+## 6. Verificacion minima
 
 1. Abrir app en navegador.
 2. Registrar usuario e iniciar sesion.
 3. Guardar alergenos y confirmar en Firestore.
-4. Abrir `IANutri` y generar una sugerencia.
+4. Abrir `IANutri` y generar sugerencia.
 
-## 10. Problemas comunes
+## 7. Troubleshooting
 
 Error: `Firestore ProjectId is not configured`
-1. Revisar `Firestore:ProjectId`.
+1. Revisar `Firestore:ProjectId` o `FIRESTORE__PROJECTID`.
 
-Error: `credentials file not found`
-1. Revisar `Firestore:CredentialsPath`.
+Error: `FIREBASE_CREDENTIALS is not valid JSON`
+1. Revisar formato JSON completo y escapes (`\\n`) en `private_key`.
+
+Error: `Your default credentials were not found`
+1. Definir `FIREBASE_CREDENTIALS` o configurar ADC con:
+2. `gcloud auth application-default login`
 
 Error: `No se encontro API key para IANutri`
-1. Configurar `IANutri:ApiKey` o variable de entorno.
+1. Configurar `GITHUB_MODELS_API_KEY`/`GITHUB_TOKEN` o `IANutri:ApiKey`.
 
 Error: `address already in use`
-1. Cerrar proceso previo o cambiar puerto.
+1. Cerrar proceso previo o cambiar puerto local.
+
+Cloud:
+1. El backend soporta `PORT` dinamico en `0.0.0.0:{PORT}`.
