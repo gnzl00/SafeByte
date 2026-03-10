@@ -17,24 +17,15 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 14px 24px;
-  padding: 12px 28px;
-  background-color: var(--nav-bg);
+  gap: 12px 24px;
+  padding: 14px clamp(14px, 4vw, 50px);
+  background-color: #1e5631;
   color: #fff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  position: relative;
-  z-index: 100;
-}
-
-.navbar-main {
-  display: flex;
-  align-items: center;
-  gap: 22px;
-  min-width: 0;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .navbar .logo {
-  font-size: 28px;
+  font-size: clamp(1.3rem, 3vw, 1.75rem);
   font-weight: 700;
   white-space: nowrap;
 }
@@ -42,9 +33,10 @@
 .nav-links {
   list-style: none;
   display: flex;
-  align-items: center;
   flex-wrap: wrap;
-  gap: 12px 16px;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px 18px;
   margin: 0;
   padding: 0;
 }
@@ -54,9 +46,13 @@
 }
 
 .nav-links a {
+  display: inline-flex;
+  align-items: center;
   text-decoration: none;
   color: #fff;
   font-weight: 600;
+  font-size: 0.95rem;
+  white-space: nowrap;
   transition: color 0.2s ease;
 }
 
@@ -209,20 +205,12 @@
 }
 
 @media (max-width: 1100px) {
-  .navbar {
-    padding: 12px 18px;
-  }
-
-  .navbar-main {
-    gap: 16px;
-  }
-
   .nav-links {
-    gap: 10px 12px;
+    gap: 8px 12px;
   }
 
-  .user-menu-trigger {
-    min-width: 250px;
+  .nav-links a {
+    font-size: 0.9rem;
   }
 }
 
@@ -230,6 +218,8 @@
   .navbar {
     align-items: flex-start;
     flex-direction: column;
+    gap: 10px;
+    padding: 12px 14px;
   }
 
   .navbar-main {
@@ -241,20 +231,29 @@
 
   .nav-links {
     width: 100%;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    justify-content: flex-start;
+    scrollbar-width: thin;
   }
 
-  .user-menu {
-    width: 100%;
+  .nav-links::-webkit-scrollbar {
+    height: 6px;
   }
 
-  .user-menu-trigger {
-    width: 100%;
-    min-width: 0;
+  .nav-links::-webkit-scrollbar-thumb {
+    background: rgba(168, 223, 101, 0.7);
+    border-radius: 999px;
   }
 
-  .user-menu-panel {
-    width: 100%;
-    left: 0;
-    right: auto;
+  .nav-links a {
+    font-size: 0.88rem;
+  }
+}
+
+@media (max-width: 520px) {
+  .nav-links a {
+    font-size: 0.83rem;
   }
 }

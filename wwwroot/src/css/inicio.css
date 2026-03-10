@@ -399,3 +399,37 @@ form.sign-in-form {
   }
   
 }
+
+@media (max-width: 460px) {
+  .container {
+    min-height: 100dvh;
+    padding: 0.8rem;
+  }
+
+  .title {
+    font-size: 1.7rem;
+  }
+
+  .signin-signup {
+    top: 98%;
+  }
+
+  .input-field {
+    height: 50px;
+    margin: 8px 0;
+  }
+
+  .input-field i {
+    line-height: 50px;
+    font-size: 1rem;
+  }
+
+  .input-field input {
+    font-size: 1rem;
+  }
+
+  .btn {
+    width: 100%;
+    max-width: 320px;
+  }
+}

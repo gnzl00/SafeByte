@@ -1,4 +1,4 @@
-@{
+﻿@{
   Layout = null;
   ViewData["ActivePage"] = "Home";
 }
@@ -13,53 +13,55 @@
   <link rel="icon" type="image/x-icon" href="/favicon.ico" />
 
   <style>
-    /* Contenedor del scanner (cuadrado) */
     #scanner-container {
       position: relative;
-      width: 300px;
-      height: 300px;
+      width: min(100%, 340px);
+      aspect-ratio: 1 / 1;
       margin: 20px auto;
       border: 3px solid #333;
+      border-radius: 10px;
       overflow: hidden;
+      background: #000;
     }
-    /* El video ocupa todo el contenedor */
+
     #video {
+      display: block;
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
-    /* Estilo para la entrada manual */
+
     .manual-input {
       text-align: center;
       margin: 20px auto;
     }
-    /* Otros estilos existentes */
+
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 20px;
     }
-    table, th, td {
+
+    table,
+    th,
+    td {
       border: 1px solid #ccc;
     }
-    th, td {
+
+    th,
+    td {
       padding: 8px;
       text-align: left;
     }
   </style>
-  <!-- Incluir ZXing desde CDN -->
+
   <script src="https://unpkg.com/@@zxing/library@@latest"></script>
-  <!-- Conserva Quagga solo si fuese útil en otras secciones (aquí no la usamos para la detección) -->
-  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script> -->
 </head>
 <body>
-  <!-- Barra de navegación -->
   <partial name="_AppNavbar" />
 
-  <!-- Sección del scanner -->
   <section id="scanner-section" class="content-section hidden">
-    <h2>Escaneo código de barras</h2>
-    <!-- Contenedor del video donde se mostrará el stream de la cámara -->
+    <h2>Escaneo codigo de barras</h2>
     <div class="scanner-wrapper">
       <div class="scanner-left">
         <div id="scanner-container">
@@ -68,23 +70,22 @@
         <button id="start-scanner-btn" type="button" onclick="startScanner()">Iniciar Escaner</button>
       </div>
 
-      <!-- Separador vertical -->
       <div class="scanner-separator"></div>
 
       <div class="scanner-right">
         <div class="manual-input">
-          <p>O introduce el código manualmente:</p>
-          <input type="text" id="barcode-input" placeholder="Introduce aquí el código de barras">
-          <button onclick="manualScan()">Buscar producto</button>
+          <p>O introduce el codigo manualmente:</p>
+          <input type="text" id="barcode-input" placeholder="Introduce aqui el codigo de barras" />
+          <button type="button" onclick="manualScan()">Buscar producto</button>
         </div>
       </div>
     </div>
+
     <div id="result">
       <div id="product-info"></div>
     </div>
   </section>
 
-  <!-- Sección de Historial de Escaneos -->
   <section id="historial-section" class="content-section hidden">
     <h2>Historial de Escaneos</h2>
     <div class="historial-header">
@@ -94,10 +95,9 @@
     <div id="historial-lista"></div>
   </section>
 
-  <!-- Sección de Contacto -->
   <section id="contact-section" class="content-section hidden">
     <h2>Contacta con Nosotros</h2>
-    <p>¿Tienes preguntas? ¡Estamos aquí para ayudarte!</p>
+    <p>Tienes preguntas? Estamos aqui para ayudarte.</p>
     <form>
       <input type="text" placeholder="Tu nombre" required />
       <input type="email" placeholder="Tu correo" required />
@@ -106,40 +106,41 @@
     </form>
   </section>
 
-  <!-- Sección Home -->
   <section id="welcome-section" class="content-section">
-    <h1>¡Bienvenido a Food DNA!</h1>
+    <h1>Bienvenido a Food DNA!</h1>
     <p>
-      Nuestra aplicación está diseñada para ofrecerte comidas seguras basadas en tus alergias alimentarias.
+      Nuestra aplicacion esta disenada para ofrecerte comidas seguras basadas en tus alergias alimentarias.
       Explora nuestras opciones y disfruta de una experiencia personalizada.
     </p>
+
     <div class="testimonials-section">
       <div class="testimonial">
-        <img src="/src/media/mujerCeliaca.png" alt="Foto de Lucía, celíaca">
+        <img src="/src/media/mujerCeliaca.png" alt="Foto de Lucia, celiaca" />
         <div class="testimonial-text">
-          <h3>Lucía, 27 años (celíaca)</h3>
+          <h3>Lucia, 27 anos (celiaca)</h3>
           <p>
-            "Ser celíaca no es solo evitar el pan. Comer fuera o elegir productos en el supermercado es una batalla constante.
-            Food DNA me ayudaría a sentirme segura y confiada cada vez que como algo nuevo."
+            "Ser celiaca no es solo evitar el pan. Comer fuera o elegir productos en el supermercado es una
+            batalla constante. Food DNA me ayudaria a sentirme segura y confiada cada vez que como algo nuevo."
           </p>
         </div>
       </div>
+
       <div class="testimonial">
-        <img src="/src/media/hombreFrutosSecos.png" alt="Foto de Diego, alérgico a frutos secos">
+        <img src="/src/media/hombreFrutosSecos.png" alt="Foto de Diego, alergico a frutos secos" />
         <div class="testimonial-text">
-          <h3>Diego, 34 años (alérgico a frutos secos)</h3>
+          <h3>Diego, 34 anos (alergico a frutos secos)</h3>
           <p>
-            "Una reacción alérgica puede cambiarte el día... o la vida. Esta aplicación me daría tranquilidad y así evitaría estar leyendo cada etiqueta durante 5 minutos."
+            "Una reaccion alergica puede cambiarte el dia... o la vida. Esta aplicacion me daria tranquilidad y
+            evitaria estar leyendo cada etiqueta durante minutos."
           </p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Sección de Configuración de Usuario -->
   <section id="config-section" class="config-container content-section hidden">
-    <h2>Configuración de usuario</h2>
-    <p>Selecciona los alérgenos que deseas evitar en las comidas.</p>
+    <h2>Configuracion de usuario</h2>
+    <p>Selecciona los alergenos que deseas evitar en las comidas.</p>
     <form id="alergenos-form">
       <div class="checkbox-container">
         <label class="alergeno-card">
@@ -147,8 +148,8 @@
           Gluten
         </label>
         <label class="alergeno-card">
-          <input type="checkbox" name="alergeno" value="Lácteos" hidden />
-          Lácteos
+          <input type="checkbox" name="alergeno" value="Lacteos" hidden />
+          Lacteos
         </label>
         <label class="alergeno-card">
           <input type="checkbox" name="alergeno" value="Huevo" hidden />
@@ -169,7 +170,7 @@
       </div>
       <button type="button" id="save-alergenos">Guardar preferencias</button>
     </form>
-    <p id="confirmation-message" style="display: none; color: green;">Preferencias guardadas con éxito.</p>
+    <p id="confirmation-message" style="display: none; color: green;">Preferencias guardadas con exito.</p>
   </section>
 
   <footer class="footer">
@@ -178,21 +179,19 @@
 
   <script src="/src/ventanas/Home.js"></script>
   <script>
-    // Función para procesar el código ingresado manualmente
+    const codeReader = new ZXing.BrowserBarcodeReader();
+    let scannerRunning = false;
+    let scannerTimeoutId = null;
+
     function manualScan() {
       stopScanner();
       const barcode = document.getElementById("barcode-input").value.trim();
       if (barcode !== "") {
         processBarcode(barcode);
       } else {
-        alert("Por favor, introduce un código de barras.");
+        alert("Por favor, introduce un codigo de barras.");
       }
     }
-
-    // Se crea un objeto de ZXing para la lectura de códigos
-    const codeReader = new ZXing.BrowserBarcodeReader();
-    let scannerRunning = false;
-    let scannerTimeoutId = null;
 
     async function startScanner() {
       if (scannerRunning) {
@@ -282,31 +281,31 @@
       stopScanner();
     });
 
-    // Función para consultar la API de Open Food Facts y mostrar la información del producto
     async function processBarcode(barcode) {
-      document.getElementById("result").innerHTML = `<p><strong>Código detectado:</strong> ${barcode}</p>`;
+      document.getElementById("result").innerHTML = `<p><strong>Codigo detectado:</strong> ${barcode}</p>`;
       const apiUrl = `https://world.openfoodfacts.org/api/v0/product/${barcode}.json`;
       try {
         const response = await fetch(apiUrl);
         const data = await response.json();
         if (data.status === 1) {
           const producto = data.product;
-          // Guardar en historial
           guardarEnHistorial({
             nombre: producto.product_name || "Producto desconocido",
             codigo: barcode,
             imagen: producto.image_url || "",
             fecha: new Date().toLocaleString("es-ES")
           });
+
           let output = `
             <p><strong>Nombre:</strong> ${producto.product_name || "Desconocido"}</p>
             <p><strong>Ingredientes:</strong> ${producto.ingredients_text || "No disponible"}</p>
-            <p><strong>Alérgenos:</strong> ${producto.allergens || "No especificado"}</p>
+            <p><strong>Alergenos:</strong> ${producto.allergens || "No especificado"}</p>
             <img src="${producto.image_url || ""}" alt="Imagen del producto" width="150">
           `;
+
           if (producto.nutriments) {
-            let nutriments = producto.nutriments;
-            let tablaNutri = `<h3>Información Nutricional</h3>
+            const nutriments = producto.nutriments;
+            let tablaNutri = `<h3>Informacion Nutricional</h3>
                               <table>
                                 <tr>
                                   <th>Componente</th>
@@ -318,22 +317,21 @@
                               <td>${nutriments[key]}</td>
                             </tr>`;
             }
-            tablaNutri += `</table>`;
+            tablaNutri += "</table>";
             output += tablaNutri;
           } else {
-            output += `<p>No hay información nutricional disponible.</p>`;
+            output += "<p>No hay informacion nutricional disponible.</p>";
           }
+
           document.getElementById("result").innerHTML += output;
         } else {
           document.getElementById("result").innerHTML += "<p>Producto no encontrado.</p>";
         }
       } catch (error) {
         console.error("Error al consultar la API:", error);
-        document.getElementById("result").innerHTML += "<p>Error al obtener información.</p>";
+        document.getElementById("result").innerHTML += "<p>Error al obtener informacion.</p>";
       }
     }
   </script>
 </body>
 </html>
-
-
