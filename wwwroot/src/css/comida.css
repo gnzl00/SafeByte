@@ -1,5 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
 
+* {
+  box-sizing: border-box;
+}
+
 .navbar {
   display: flex;
   justify-content: space-between;
@@ -44,13 +48,15 @@ body {
 }
 
 .page-content {
-  padding: 20px;
+  padding: clamp(12px, 3vw, 20px);
+  width: min(1200px, 100%);
+  margin: 0 auto;
 }
 
 h1 {
   text-align: center;
   color: #1e5631;
-  font-size: 42px;
+  font-size: clamp(1.8rem, 4.4vw, 2.6rem);
   font-weight: bold;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
 }
@@ -80,7 +86,7 @@ h1 {
   gap: 12px;
   margin: 20px auto;
   padding: 10px;
-  width: 60%;
+  width: min(760px, 100%);
 }
 
 #search-input {
@@ -135,6 +141,9 @@ h1 {
 }
 
 .btn-favoritos {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   white-space: nowrap;
   padding: 11px 20px;
   font-size: 15px;
@@ -195,8 +204,10 @@ h1 {
   background-color: white;
   padding: 25px;
   border-radius: 12px;
-  width: 60%;
+  width: min(92vw, 760px);
   max-width: 600px;
+  max-height: 88vh;
+  overflow-y: auto;
   text-align: center;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
   animation: slideIn 0.4s ease-in-out;
@@ -256,5 +267,49 @@ h1 {
   to {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+@media (max-width: 860px) {
+  #search-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  #search-input,
+  .btn-favoritos {
+    width: 100%;
+  }
+
+  .btn-favoritos {
+    justify-content: center;
+  }
+
+  #comidas-lista {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+  }
+
+  .modal-content {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 520px) {
+  .page-content {
+    padding: 10px;
+  }
+
+  .comida-item {
+    padding: 12px;
+  }
+
+  .comida-item img {
+    height: 150px;
+  }
+
+  .fav-btn {
+    font-size: 18px;
   }
 }

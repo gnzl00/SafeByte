@@ -43,7 +43,7 @@ body {
 }
 
 section {
-  padding: 50px;
+  padding: clamp(18px, 4vw, 50px);
   text-align: center;
 }
 
@@ -139,26 +139,19 @@ form input:focus, form textarea:focus {
 }
 
 footer {
-  position: fixed;
-  bottom: 0;
-  left: 0;
   width: 100%;
-  height: 1%;
   background-color: #3ea561;
   color: white;
-  padding: 15px;
+  padding: 14px 10px;
+  margin-top: 28px;
+  text-align: center;
 }
 
 .textofooter {
-  right: 47%;
-  position:absolute;
-  font-size: 14px;
-  top: -25%;
-}
-
-body {
+  position: static;
   margin: 0;
-  padding-bottom: 60px; /* Ajusta este valor según la altura de tu footer */
+  font-size: 14px;
+  color: #fff;
 }
 
 
@@ -176,12 +169,12 @@ footer a:hover {
 }
   
 .content-section {
-    padding: 50px;
+    padding: clamp(18px, 4vw, 44px);
     text-align: center;
     background-color: #f4f7f6;
     border-radius: 10px;
     box-shadow: 0px 4px 8px rgba(255, 255, 255, 0.1);
-    margin: 20px;
+    margin: clamp(12px, 3vw, 20px);
 }
   
 h1, h2 {
@@ -338,8 +331,8 @@ form button:hover {
   display: flex;
   justify-content: center;
   align-items: stretch; /* Importante para igualar altura */
-  gap: 60px;
-  margin-top: 40px;
+  gap: clamp(16px, 5vw, 60px);
+  margin-top: 24px;
   flex-wrap: wrap;
   min-height: 300px;
 }
@@ -352,6 +345,7 @@ form button:hover {
   justify-content: center; /* Centra verticalmente el contenido */
   gap: 20px;
   flex: 1;
+  min-width: min(320px, 100%);
 }
 
 .scanner-separator {
@@ -379,8 +373,7 @@ form button:hover {
   border-radius: 8px;
   outline: none;
   transition: box-shadow 0.3s ease, border-color 0.3s ease;
-  width: 100%;
-  max-width: 300px;
+  width: min(100%, 320px);
   box-sizing: border-box;
 }
 
@@ -569,7 +562,7 @@ form button:hover {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  max-width: 700px;
+  max-width: 900px;
   margin: 0 auto;
 }
 
@@ -612,4 +605,129 @@ form button:hover {
   color: #888;
   font-size: 16px;
   padding: 40px 0;
+}
+
+@media (max-width: 1024px) {
+  .testimonial {
+    max-width: 100%;
+    flex: 1 1 100%;
+  }
+
+  #config-section,
+  #contact-section {
+    margin: 30px auto;
+    width: min(100%, 760px);
+  }
+}
+
+@media (max-width: 860px) {
+  .content-section {
+    margin: 10px;
+    border-radius: 8px;
+  }
+
+  h1 {
+    font-size: clamp(1.65rem, 6vw, 2.2rem);
+  }
+
+  h2 {
+    font-size: clamp(1.3rem, 4.8vw, 1.8rem);
+  }
+
+  p {
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  .testimonials-section {
+    gap: 1rem;
+  }
+
+  .testimonial {
+    flex-direction: column;
+    text-align: center;
+    padding: 1rem;
+  }
+
+  .testimonial img {
+    margin-right: 0;
+    margin-bottom: 0.8rem;
+    width: 88px;
+    height: 88px;
+  }
+
+  .scanner-wrapper {
+    flex-direction: column;
+    align-items: stretch;
+    min-height: 0;
+  }
+
+  .scanner-left,
+  .scanner-right {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .scanner-separator {
+    width: 100%;
+    height: 1px;
+    min-height: 1px;
+  }
+
+  .checkbox-container {
+    grid-template-columns: repeat(2, minmax(120px, 1fr));
+    gap: 14px;
+    width: 100%;
+  }
+
+  .alergeno-card {
+    width: 100%;
+    max-width: none;
+  }
+
+  .historial-item {
+    gap: 10px;
+    padding: 10px;
+  }
+}
+
+@media (max-width: 560px) {
+  .content-section {
+    padding: 14px;
+  }
+
+  button,
+  form button,
+  #save-alergenos,
+  #contact-section button {
+    width: 100%;
+    max-width: 320px;
+    font-size: 16px;
+  }
+
+  .manual-input {
+    width: 100%;
+  }
+
+  .manual-input input[type="text"] {
+    width: 100%;
+  }
+
+  .checkbox-container {
+    grid-template-columns: 1fr;
+  }
+
+  #btn-limpiar-historial {
+    width: 100%;
+  }
+
+  .historial-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .historial-item img {
+    width: 52px;
+    height: 52px;
+  }
 }

@@ -2,16 +2,15 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
   gap: 12px 24px;
-  padding: 15px 50px;
+  padding: 14px clamp(14px, 4vw, 50px);
   background-color: #1e5631;
-  color: white;
+  color: #fff;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .navbar .logo {
-  font-size: 28px;
+  font-size: clamp(1.3rem, 3vw, 1.75rem);
   font-weight: 700;
   white-space: nowrap;
 }
@@ -19,9 +18,10 @@
 .nav-links {
   list-style: none;
   display: flex;
-  align-items: center;
   flex-wrap: wrap;
-  gap: 12px 20px;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px 18px;
   margin: 0;
   padding: 0;
 }
@@ -31,9 +31,13 @@
 }
 
 .nav-links a {
+  display: inline-flex;
+  align-items: center;
   text-decoration: none;
-  color: white;
+  color: #fff;
   font-weight: 600;
+  font-size: 0.95rem;
+  white-space: nowrap;
   transition: color 0.2s ease;
 }
 
@@ -43,19 +47,21 @@
 }
 
 @media (max-width: 1100px) {
-  .navbar {
-    padding: 14px 24px;
+  .nav-links {
+    gap: 8px 12px;
   }
 
-  .nav-links {
-    gap: 10px 14px;
+  .nav-links a {
+    font-size: 0.9rem;
   }
 }
 
 @media (max-width: 860px) {
   .navbar {
     align-items: flex-start;
-    padding: 12px 16px;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 14px;
   }
 
   .navbar .logo {
@@ -64,10 +70,29 @@
 
   .nav-links {
     width: 100%;
-    gap: 10px 12px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    justify-content: flex-start;
+    scrollbar-width: thin;
+  }
+
+  .nav-links::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .nav-links::-webkit-scrollbar-thumb {
+    background: rgba(168, 223, 101, 0.7);
+    border-radius: 999px;
   }
 
   .nav-links a {
-    font-size: 0.95rem;
+    font-size: 0.88rem;
+  }
+}
+
+@media (max-width: 520px) {
+  .nav-links a {
+    font-size: 0.83rem;
   }
 }
