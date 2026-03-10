@@ -63,9 +63,9 @@
     <div class="scanner-wrapper">
       <div class="scanner-left">
         <div id="scanner-container">
-          <video id="video" autoplay muted></video>
+          <video id="video" autoplay muted playsinline></video>
         </div>
-        <button onclick="startScanner()">Iniciar Escáner</button>
+        <button id="start-scanner-btn" type="button" onclick="startScanner()">Iniciar Escaner</button>
       </div>
 
       <!-- Separador vertical -->
@@ -89,7 +89,7 @@
     <h2>Historial de Escaneos</h2>
     <div class="historial-header">
       <p>Productos que has escaneado recientemente.</p>
-      <button id="btn-limpiar-historial" onclick="limpiarHistorial()">🗑️ Limpiar historial</button>
+      <button id="btn-limpiar-historial" onclick="limpiarHistorial()">Limpiar historial</button>
     </div>
     <div id="historial-lista"></div>
   </section>
@@ -173,13 +173,14 @@
   </section>
 
   <footer class="footer">
-    <p class="textofooter">SafeByte 2025</p>
+    <p class="textofooter">SafeByte 2026</p>
   </footer>
 
   <script src="/src/ventanas/Home.js"></script>
   <script>
     // Función para procesar el código ingresado manualmente
     function manualScan() {
+      stopScanner();
       const barcode = document.getElementById("barcode-input").value.trim();
       if (barcode !== "") {
         processBarcode(barcode);
@@ -190,25 +191,96 @@
 
     // Se crea un objeto de ZXing para la lectura de códigos
     const codeReader = new ZXing.BrowserBarcodeReader();
+    let scannerRunning = false;
+    let scannerTimeoutId = null;
 
-    // Función para iniciar el escáner, leer el código y solicitar la información del producto
-    function startScanner() {
-      console.log("Iniciando escáner...");
-      codeReader.decodeFromVideoDevice(null, "video", (result, err) => {
-        if (result) {
-          console.log("Código detectado: " + result.text);
-          // Asigna el código detectado al campo de entrada
-          document.getElementById("barcode-input").value = result.text;
-          // Consulta la API con el código detectado
-          processBarcode(result.text);
-          // Detiene la lectura para evitar múltiples lecturas seguidas
-          codeReader.reset();
+    async function startScanner() {
+      if (scannerRunning) {
+        return;
+      }
+
+      scannerRunning = true;
+      updateScannerButton(true);
+      setScannerMessage("Iniciando camara...");
+
+      try {
+        const decodePromise = codeReader.decodeOnceFromVideoDevice(undefined, "video");
+        const timeoutPromise = new Promise((_, reject) => {
+          scannerTimeoutId = window.setTimeout(() => {
+            reject(new Error("Tiempo de espera agotado. Acerca mas el codigo al centro."));
+          }, 15000);
+        });
+
+        const result = await Promise.race([decodePromise, timeoutPromise]);
+        const detectedCode = (result?.text || "").trim();
+        if (!detectedCode) {
+          throw new Error("No se pudo leer el codigo.");
         }
-        if (err && !(err instanceof ZXing.NotFoundException)) {
-          console.error(err);
+
+        document.getElementById("barcode-input").value = detectedCode;
+        await processBarcode(detectedCode);
+      } catch (error) {
+        if (error?.name === "NotAllowedError") {
+          setScannerMessage("Permiso de camara denegado.");
+        } else if (error?.name !== "AbortError") {
+          console.error("Error del escaner:", error);
+          setScannerMessage(error?.message || "No se pudo iniciar el escaner.");
         }
-      });
+      } finally {
+        stopScanner();
+      }
     }
+
+    function stopScanner() {
+      if (scannerTimeoutId !== null) {
+        window.clearTimeout(scannerTimeoutId);
+        scannerTimeoutId = null;
+      }
+
+      try {
+        codeReader.reset();
+      } catch {
+        // Ignore reset errors.
+      }
+
+      const videoElement = document.getElementById("video");
+      if (videoElement?.srcObject) {
+        videoElement.srcObject.getTracks().forEach((track) => track.stop());
+        videoElement.srcObject = null;
+      }
+
+      scannerRunning = false;
+      updateScannerButton(false);
+    }
+
+    function updateScannerButton(isScanning) {
+      const button = document.getElementById("start-scanner-btn");
+      if (!button) {
+        return;
+      }
+
+      button.disabled = isScanning;
+      button.textContent = isScanning ? "Escaneando..." : "Iniciar Escaner";
+    }
+
+    function setScannerMessage(message) {
+      const resultNode = document.getElementById("result");
+      if (!resultNode) {
+        return;
+      }
+
+      resultNode.innerHTML = `<p>${message}</p>`;
+    }
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) {
+        stopScanner();
+      }
+    });
+
+    window.addEventListener("beforeunload", () => {
+      stopScanner();
+    });
 
     // Función para consultar la API de Open Food Facts y mostrar la información del producto
     async function processBarcode(barcode) {

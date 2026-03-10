@@ -1,226 +1,263 @@
-﻿# 03 - MVC de alergenos y persistencia
+﻿# 03 - Dominio de alergenos: MVC, persistencia y decisiones
 
-## 0. Contexto de migracion (Apache/XAMPP -> Firebase)
+Fecha de referencia: 2026-03-09.
 
-Segun el flujo historico del proyecto:
-- fase antigua: pruebas locales con Apache/XAMPP en puerto local
-- fase actual: backend ASP.NET Core con persistencia en Firebase Firestore
+Este documento describe de forma detallada como SafeByte modela, valida y usa los alergenos del usuario a lo largo de toda la aplicacion.
 
-Este documento refleja la fase actual y deja claro que la fuente de verdad ya no es una sesion local del navegador para alergenos.
+## 1. Problema funcional que resuelve este modulo
 
-## 1. Que problema habia
+El proyecto necesita una fuente de verdad unica para restricciones alimentarias del usuario.
 
-Antes, las preferencias de alergenos se guardaban solo en navegador:
-- `localStorage`
-- sin persistencia real por usuario en base de datos
+Riesgo previo (antes de consolidar backend):
 
-Consecuencia:
-- si el usuario cambiaba de dispositivo o navegador, perdia preferencias
-- no habia fuente unica de verdad en backend
+1. Preferencias guardadas solo en navegador.
+2. Perdida al cambiar de dispositivo o limpiar datos.
+3. Inconsistencia entre pantallas (Home, Comidas, IANutri).
 
-## 2. Que se ha implementado
+Objetivo actual:
 
-Se ha creado un flujo MVC completo para alergenos, conectado a Firestore:
+1. Persistir alergenos por usuario en Firestore.
+2. Validar en backend con reglas unicas.
+3. Reutilizar esas preferencias en todos los flujos de producto.
 
-1. Modelos:
+## 2. Implementacion actual (resumen ejecutivo)
+
+Piezas principales:
+
+1. Catalogo y normalizacion:
+- `Services/AllergenCatalog.cs`
+
+2. Contratos:
 - `Models/UpdateUserAllergensRequest.cs`
 - `Models/UserAllergenPreferencesResponse.cs`
-- `Services/AllergenCatalog.cs` (catalogo y normalizacion)
 
-2. Controlador:
+3. API:
 - `Controllers/AllergensController.cs`
 
-3. Vista y cliente:
-- `Views/Home/Home.cshtml` (UI checkboxes)
-- `wwwroot/src/ventanas/Home.js` (cargar/guardar)
-- `wwwroot/src/ventanas/comida.js` (filtrar recetas usando preferencias persistidas)
+4. Integracion auth:
+- `Controllers/AuthController.cs`
 
-4. Integracion de autenticacion:
-- `Controllers/AuthController.cs` ahora crea usuarios con `allergens: []`
-- login devuelve alergenos actuales
-- `wwwroot/src/ventanas/index.js` guarda usuario actual (`sb_user`)
+5. UI y consumo:
+- `wwwroot/src/ventanas/Home.js`
+- `wwwroot/src/ventanas/comida.js`
+- `wwwroot/src/ventanas/ianutri.js`
 
-## 3. Catalogo de alergenos soportado
+## 3. Decision central: catalogo cerrado
 
-Catalogo actual validado por backend:
-1. Gluten
-2. Lácteos
-3. Huevo
-4. Frutos secos
-5. Mariscos
-6. Soja
+Catalogo canonico en backend:
 
-Nota:
-- el backend normaliza mayusculas/minusculas y tildes.
-- si llega un alergeno fuera de catalogo, devuelve error 400.
+1. `Gluten`
+2. `Lacteos`
+3. `Huevo`
+4. `Frutos secos`
+5. `Mariscos`
+6. `Soja`
 
-## 4. Esquema Firestore usado
+### 3.1 Por que catalogo cerrado
 
-Coleccion:
-- `users`
+1. Evita errores de escritura y sinonimos inconsistentes.
+2. Permite validacion estricta en API.
+3. Permite filtros de recetas predecibles.
+4. Simplifica UX al mostrar opciones fijas.
 
-Documento:
-- ID = email normalizado (minusculas, sin espacios)
+### 3.2 Coste de la decision
 
-Campos de alergenos:
-- `allergens` (array de string)
-- `allergensUpdatedAt` (timestamp)
+1. Menor flexibilidad para casos especiales.
+2. Cualquier nuevo alergeno requiere cambio coordinado en backend+frontend+docs.
 
-Ejemplo:
+## 4. Normalizacion de entradas (`AllergenCatalog`)
+
+`AllergenCatalog.NormalizeMany(...)` aplica:
+
+1. `trim + lowercase`.
+2. Remocion de diacriticos (formato Unicode FormD).
+3. Conserva letras, digitos y espacios.
+4. Colapsa espacios repetidos.
+5. Mapea llave normalizada a valor canonico.
+6. Deduplica sin importar mayusculas/minusculas.
+7. Devuelve lista de invalidos por separado.
+
+Resultado:
+- Entradas como `gluten`, `GLUTEN`, `Gluten` convergen a `Gluten`.
+- Entradas fuera de catalogo quedan en `invalidAllergens`.
+
+## 5. Modelo de datos en Firestore
+
+### 5.1 Documento de usuario
+
+Ruta:
+- `users/{normalizedEmail}`
+
+Campos de este modulo:
+
+1. `allergens`: array de strings canonicos.
+2. `allergensUpdatedAt`: timestamp UTC.
+
+### 5.2 Por que embebido en el usuario
+
+Decision:
+- Guardar alergenos en el mismo documento del usuario, no en coleccion separada.
+
+Motivo:
+
+1. Lectura de perfil en una sola llamada.
+2. Menos round-trips para login y carga inicial.
+3. Menor complejidad de consultas.
+
+Coste:
+
+1. Menos flexible para versionado historico de preferencias.
+2. Escalar auditoria requiere estructura adicional.
+
+## 6. Contratos API detallados
+
+Base route: `/api/Allergens`.
+
+### 6.1 `GET /Catalog`
+
+Uso:
+- Obtener lista oficial de alergenos soportados.
+
+Respuesta tipo:
+
 ```json
 {
-  "username": "pepe",
-  "email": "pepe@correo.com",
-  "passwordHash": "....",
-  "createdAt": "<timestamp>",
-  "allergens": ["Gluten", "Mariscos"],
-  "allergensUpdatedAt": "<timestamp>"
+  "allergens": ["Gluten", "Lacteos", "Huevo", "Frutos secos", "Mariscos", "Soja"]
 }
 ```
 
-## 5. API de alergenos (contratos)
+### 6.2 `GET /User?email=...`
 
-### 5.1 GET catalogo
+Uso:
+- Cargar preferencias de un usuario.
 
-`GET /api/Allergens/Catalog`
+Validaciones:
 
-Respuesta:
+1. Email no vacio.
+2. Usuario existente en Firestore.
+
+Respuestas:
+
+1. `200 OK` con DTO:
+
 ```json
 {
-  "allergens": ["Gluten", "Lácteos", "Huevo", "Frutos secos", "Mariscos", "Soja"]
-}
-```
-
-### 5.2 GET alergenos de usuario
-
-`GET /api/Allergens/User?email=usuario@correo.com`
-
-Respuesta:
-```json
-{
-  "email": "usuario@correo.com",
+  "email": "usuario@dominio.com",
   "allergens": ["Gluten", "Soja"],
-  "updatedAtUtc": "2026-02-24T10:12:30.0000000Z"
+  "updatedAtUtc": "2026-03-09T12:34:56Z"
 }
 ```
 
-Errores:
-- `400` email invalido
-- `404` usuario no encontrado
+2. `400 BadRequest` si email invalido.
+3. `404 NotFound` si usuario no existe.
 
-### 5.3 PUT alergenos de usuario
+### 6.3 `PUT /User`
 
-`PUT /api/Allergens/User`
+Uso:
+- Persistir preferencias del usuario.
 
-Body:
+Request:
+
 ```json
 {
-  "email": "usuario@correo.com",
-  "allergens": ["gluten", "Lácteos"]
+  "email": "usuario@dominio.com",
+  "allergens": ["gluten", "Lacteos"]
 }
 ```
 
 Comportamiento:
-- normaliza valores (`gluten` -> `Gluten`, `Lácteos` -> `Lácteos`)
-- valida catalogo
-- guarda en Firestore
 
-Respuesta:
+1. Normaliza email.
+2. Normaliza alergenos.
+3. Si hay invalidos, responde `400` con detalle.
+4. Si usuario no existe, responde `404`.
+5. Si todo es valido, actualiza documento y timestamp.
+
+Error de validacion tipo:
+
 ```json
 {
-  "email": "usuario@correo.com",
-  "allergens": ["Gluten", "Lácteos"],
-  "updatedAtUtc": "2026-02-24T10:13:05.0000000Z"
-}
-```
-
-Error si hay valores invalidos:
-```json
-{
-  "message": "Se enviaron alérgenos no válidos.",
+  "message": "Se enviaron alergenos no validos.",
   "invalidAllergens": ["Pimienta"],
-  "allowedAllergens": ["Gluten", "Lácteos", "Huevo", "Frutos secos", "Mariscos", "Soja"]
+  "allowedAllergens": ["Gluten", "Lacteos", "Huevo", "Frutos secos", "Mariscos", "Soja"]
 }
 ```
 
-## 6. Flujo completo de extremo a extremo
+## 7. Integracion con autenticacion
 
-### Caso A: usuario logueado
+`AuthController` incorpora este dominio en registro/login:
 
-1. Hace login en `Index`.
-2. `index.js` guarda `sb_user` en localStorage.
-3. En `Home`, `Home.js` llama `GET /api/Allergens/User`.
-4. Marca checkboxes con los alergenos recibidos.
-5. Al guardar, llama `PUT /api/Allergens/User`.
-6. `comida.js` vuelve a cargar preferencias y filtra recetas.
+1. Registro crea usuario con `allergens = []`.
+2. Login devuelve `allergens` normalizados.
 
-### Caso B: acceso sin autenticacion
+Decision:
+- Devolver alergenos en login para bootstrap inmediato del frontend.
 
-1. El flujo de pantalla inicial ya no ofrece `Skip Login`.
-2. Si no hay usuario valido en `sb_user`, no se considera un flujo soportado para persistencia remota.
-3. Para guardar en Firestore, el usuario debe iniciar sesion.
+Motivo:
+- Menor latencia percibida al entrar a Home/Comidas/IANutri.
 
-## 7. Archivos tocados y para que sirve cada uno
+## 8. Integracion frontend por pantalla
 
-Backend:
-- `Controllers/AllergensController.cs`: endpoints de lectura/escritura de alergenos.
-- `Services/AllergenCatalog.cs`: normaliza y valida alergenos permitidos.
-- `Models/UpdateUserAllergensRequest.cs`: DTO de entrada para `PUT`.
-- `Models/UserAllergenPreferencesResponse.cs`: DTO de salida.
-- `Controllers/AuthController.cs`: inicializa y devuelve alergenos en auth.
-- `Program.cs`: seed incluye campos de alergenos.
+### 8.1 Login (`index.js`)
 
-Frontend:
-- `wwwroot/src/ventanas/index.js`: guarda sesion del usuario para identificar preferencias (sin modo invitado desde pantalla inicial).
-- `wwwroot/src/ventanas/Home.js`: carga y guarda preferencias en backend.
-- `wwwroot/src/ventanas/comida.js`: filtra recetas con preferencias persistidas.
-- `Views/Home/Home.cshtml`: limpia JS inline duplicado y delega al script principal.
+1. Persiste `sb_user` con email/username.
+2. Guarda cache de alergenos en:
+- `sb_alergenos`
+- `alergenosSeleccionados` (compatibilidad legacy)
 
-## 8. Como probar manualmente (checklist)
+### 8.2 Home (`Home.js`)
 
-1. Arranca app con `dotnet run`.
-2. Registra usuario nuevo.
-3. Inicia sesion con ese usuario.
-4. Ve a `Configuracion de usuario`.
-5. Marca 2-3 alergenos y guarda.
-6. Verifica en Firestore que el documento del usuario actualizo `allergens`.
-7. Cierra sesion, vuelve a iniciar y revisa que checkboxes siguen marcados.
-8. Ve a `Comidas` y confirma que recetas con esos alergenos desaparecen.
+1. Carga remota desde API cuando hay usuario.
+2. Si falla API, usa cache local.
+3. Guarda remoto con `PUT /api/Allergens/User`.
+4. Refleja estado en checkboxes y mensaje de estado.
 
-## 9. Troubleshooting rapido
+### 8.3 Comidas (`comida.js`)
 
-No se guardan alergenos:
-1. Revisa consola red (peticion `PUT /api/Allergens/User`).
-2. Revisa respuesta backend (400/404/500).
-3. Verifica que existe `sb_user` en localStorage.
+1. Lee alergenos de API/cache.
+2. Excluye recetas con conflicto directo.
 
-Error concreto con `Lácteos`:
-1. Causa detectada: texto mojibake por codificación en la etiqueta de `Lácteos`.
-2. Efecto: el backend lo interpretaba como valor no válido y devolvía `400`.
-3. Solución aplicada:
-- vista corregida a texto UTF-8 correcto (`Lácteos`)
-- normalización backend endurecida para ignorar puntuación/artefactos de codificación heredada y mapear correctamente a `Lácteos`
-4. Prevención:
-- guardar `.cshtml`, `.js`, `.md` siempre en UTF-8
-- evitar editores/configuraciones que reinterpreten UTF-8 como Latin-1/Windows-1252
+### 8.4 IANutri (`ianutri.js`)
 
-Marca alergenos pero no filtra comidas:
-1. Abre `Comidas` despues de guardar.
-2. Verifica que `comida.js` recibe array no vacio desde API.
-3. Comprueba que los nombres de alergenos coinciden exactamente.
+1. Resuelve alergenos al iniciar modulo.
+2. Los envia en reformulacion/sugerencias/asistente.
+3. Backend vuelve a resolver remoto para evitar depender solo del cliente.
 
-Usuario no encontrado en API de alergenos:
-1. Revisa email normalizado (minusculas).
-2. Comprueba que el documento `users/{email}` existe en Firestore.
+## 9. Decisiones de resiliencia
 
-## 10. Limites de la implementacion actual
+1. Fallback local cuando no hay red o falla Firestore.
+2. Cache duplicada (`sb_alergenos` + legacy) para no romper pantallas antiguas.
+3. Normalizacion en ambos lados:
+- frontend evita duplicados simples,
+- backend impone canon definitivo.
 
-1. Seguridad basica (sin JWT/Firebase Auth).
-2. Email llega desde cliente y se usa como identificador.
+## 10. Riesgos y limitaciones actuales
 
-Para produccion real:
-1. usar autenticacion fuerte (token firmado)
-2. validar identidad del token en backend
-3. no aceptar email libre en body/query
+1. Identidad por email enviado desde cliente.
+2. Sin token de sesion firmado.
+3. Favoritos e historial scanner siguen en localStorage (no remotos).
+4. Catalogo no configurable sin despliegue.
 
+## 11. Mejoras recomendadas (roadmap)
 
+1. Migrar a autenticacion real (JWT o Firebase Auth) y derivar email del token.
+2. Versionar preferencias (quien, cuando, cambio) para auditoria.
+3. Exponer endpoint de catalogo administrable con feature flag.
+4. Sincronizar favoritos y scanner en backend por usuario.
+
+## 12. Checklist de pruebas manuales
+
+1. Registrar usuario nuevo y verificar `allergens=[]` en Firestore.
+2. Guardar 2 alergenos desde Home y confirmar respuesta `200`.
+3. Recargar Home y comprobar persistencia visual.
+4. Ir a Comidas y validar que platos en conflicto desaparecen.
+5. Ir a IANutri y validar chips de alergenos cargados.
+6. Enviar alergeno invalido por API y confirmar `400` con detalle.
+
+## 13. Referencias
+
+1. `Controllers/AllergensController.cs`
+2. `Services/AllergenCatalog.cs`
+3. `wwwroot/src/ventanas/Home.js`
+4. `wwwroot/src/ventanas/comida.js`
+5. `wwwroot/src/ventanas/ianutri.js`

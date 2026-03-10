@@ -1,121 +1,146 @@
-# 05 - Pendientes manuales para despliegue cloud
+﻿# 05 - Pendientes tecnicos y de despliegue cloud
 
-Este documento lista lo que ya quedo implementado en codigo y lo que debes hacer manualmente fuera del repositorio.
+Fecha de referencia: 2026-03-09.
 
-## 1. Lo que ya quedo implementado
+Este documento separa claramente:
 
-1. Firebase ya no se inicializa con archivo local (`secrets/service-account.json`).
-2. Firebase usa `FIREBASE_CREDENTIALS` (JSON string en variable de entorno).
-3. IANutri prioriza `GITHUB_MODELS_API_KEY`/`GITHUB_TOKEN` (compatible con `OPENAI_API_KEY`).
-4. El backend soporta `PORT` dinamico y bind en `0.0.0.0:{PORT}`.
-5. CORS de produccion usa `CORS_ALLOWED_ORIGINS`.
-6. Se eliminaron credenciales locales detectadas del arbol de trabajo (`.env`, `secrets/service-account.json`).
-7. Se agregaron artefactos de despliegue: `Dockerfile`, `render.yaml`, `.env.example`, `DEPLOY.md`.
+1. Lo que ya esta implementado en codigo.
+2. Lo que aun depende de configuracion manual.
+3. Lo que es deuda tecnica planificada.
 
-## 2. Pendientes que debes hacer tu (no automatizables desde aqui)
+## 1. Estado actual: que ya quedo resuelto
 
-### 2.1 Configurar secretos en tu proveedor cloud
+### 1.1 Preparacion cloud del backend
 
-Debes crear estas variables en Render/Railway/Azure App Service:
+Ya implementado:
 
-- `FIRESTORE__PROJECTID`
-- `FIREBASE_CREDENTIALS`
-- `GITHUB_MODELS_API_KEY` (o `GITHUB_TOKEN`)
-- `CORS_ALLOWED_ORIGINS`
+1. Puerto dinamico (`PORT`) y bind `0.0.0.0`.
+2. Inicializacion Firestore por `FIREBASE_CREDENTIALS`.
+3. Fallback a ADC cuando no hay JSON inline.
+4. CORS parametrizable por `CORS_ALLOWED_ORIGINS`.
+5. Dockerfile y archivos base de despliegue (`render.yaml`, `.dockerignore`, `.env.example`).
 
-Pasos:
+### 1.2 Modulo de producto
 
-1. Abre el panel del servicio cloud.
-2. Ve a configuracion de entorno (Environment / App Settings).
-3. Crea cada variable sin comillas extra.
-4. Guarda y reinicia el servicio.
+Ya implementado:
 
-### 2.2 Crear el valor correcto de FIREBASE_CREDENTIALS
+1. Auth basica con persistencia en Firestore.
+2. Persistencia de alergenos por usuario.
+3. IANutri completo con historial remoto.
+4. Navbar con menu de usuario usando `username` y `email`.
+5. Scanner endurecido con liberacion explicita de camara.
 
-1. En Firebase Console, genera una nueva Service Account key para produccion.
-2. No subas el JSON al repo.
-3. Convierte el JSON en una sola linea (manteniendo `\\n` en `private_key`).
-4. Pega esa linea en la variable `FIREBASE_CREDENTIALS` del proveedor cloud.
+## 2. Pendientes manuales obligatorios (fuera de codigo)
 
-### 2.3 Rotar credenciales si hubo exposicion previa
+## 2.1 Configurar secretos en proveedor cloud
 
-Se detectaron credenciales locales en el arbol antes de la limpieza. Debes rotarlas fuera del codigo:
+Variables minimas obligatorias:
 
-1. Revoca la API key/token anterior del proveedor de IA.
-2. Genera una nueva key y actualiza `GITHUB_MODELS_API_KEY` o `GITHUB_TOKEN`.
-3. Revoca la Service Account key anterior de Firebase.
-4. Genera una nueva key y actualiza `FIREBASE_CREDENTIALS`.
+1. `FIRESTORE__PROJECTID`
+2. `FIREBASE_CREDENTIALS`
+3. `GITHUB_MODELS_API_KEY` o `GITHUB_TOKEN`
+4. `CORS_ALLOWED_ORIGINS`
 
-### 2.4 Configurar CORS con dominios reales
+Motivo:
+- Sin estas variables la app arranca incompleta o falla al primer uso real.
 
-1. Define dominios frontend en produccion, separados por comas.
-2. Ejemplo:
-   `https://app.tudominio.com,https://admin.tudominio.com`
-3. Guarda en `CORS_ALLOWED_ORIGINS`.
+## 2.2 Rotacion de credenciales
 
-### 2.5 Actualizar cliente Android con URL backend cloud
+Accion obligatoria si existio exposicion previa:
 
-No se detecto codigo Android Kotlin en este repositorio para cambiar la base URL.
+1. Revocar key anterior de IA.
+2. Generar key nueva y actualizar entorno cloud.
+3. Revocar service account key anterior de Firebase.
+4. Generar credencial nueva y actualizar `FIREBASE_CREDENTIALS`.
 
-Debes hacerlo en el repo/app movil:
+## 2.3 Ajustar clientes externos
 
-1. Cambia la URL base de API desde localhost a la URL publica del backend cloud.
-2. Recompila la app Android.
-3. Prueba login, alergenos e IANutri contra el backend desplegado.
+1. Si hay app movil separada, cambiar base URL de API a dominio cloud.
+2. Recompilar y revalidar login/alergenos/ianutri.
 
-### 2.6 Despliegue efectivo (pasos minimos)
+## 3. Deuda tecnica priorizada (producto + plataforma)
 
-1. Sube estos cambios al repositorio remoto.
-2. Crea servicio en Render/Railway/Azure desde repo o Dockerfile.
-3. Configura variables del punto 2.1.
-4. Despliega.
-5. Revisa logs de arranque y health endpoint (`/`).
+## 3.1 Prioridad alta (seguridad)
 
-### 2.7 Si `git push origin main` es rechazado (non-fast-forward)
+1. Migrar hash de password a algoritmo adaptativo con salt por usuario.
+2. Implementar auth robusta (JWT o Firebase Auth).
+3. Dejar de confiar en `email` recibido del cliente para autorizar acciones.
+4. Aplicar rate limiting en `Auth` e `IANutri`.
 
-1. Trae cambios remotos:
-   `git fetch origin`
-2. Actualiza tu `main` local:
-   `git checkout main`
-   `git pull --rebase origin main`
-3. Integra tu rama de trabajo:
-   `git merge --no-ff <tu-rama>`
-4. Sube `main`:
-   `git push origin main`
+Impacto esperado:
+- Reduce riesgo de suplantacion y mejora postura de seguridad minima.
 
-Alternativa de prueba rapida:
-1. Subir rama al fork y desplegar esa rama en Render.
+## 3.2 Prioridad media (arquitectura y mantenibilidad)
 
-### 2.8 Campos Render que no debes olvidar
+1. Extraer JS inline de `Home.cshtml` a modulo dedicado.
+2. Reducir duplicacion de utilidades (`getCurrentUser`, cache de alergenos) entre scripts.
+3. Consolidar codificacion UTF-8 consistente para evitar mojibake.
+4. Definir contratos de errores estandarizados en API.
 
-En `Advanced`:
-1. `Health Check Path`: `/`
-2. `Docker Build Context Directory`: `.`
-3. `Dockerfile Path`: `./Dockerfile`
+Impacto esperado:
+- Menos bugs por divergencia entre pantallas y mantenimiento mas predecible.
 
-Si `Dockerfile Path` apunta mal, Render falla con:
-1. `failed to read dockerfile: no such file or directory`
+## 3.3 Prioridad media-baja (experiencia y observabilidad)
 
-## 3. Verificacion recomendada post-despliegue
+1. Persistir historial scanner y favoritos en backend.
+2. Anadir metricas y trazas (latencia endpoint, ratio fallback IA, errores por tipo).
+3. Definir dashboard operativo minimo para produccion.
 
-1. `POST /api/Auth/Register`.
-2. `POST /api/Auth/Login`.
-3. `GET/PUT /api/Allergens/User`.
-4. `POST /api/IANutri/Reformulate`.
-5. `POST /api/IANutri/GenerateSuggestions`.
+Impacto esperado:
+- Mejor experiencia multi-dispositivo y diagnostico mas rapido.
 
-Si falla Firebase:
+## 4. Plan de ejecucion recomendado por iteraciones
 
-1. Revisar `FIRESTORE__PROJECTID`.
-2. Revisar formato JSON de `FIREBASE_CREDENTIALS`.
-3. Revisar permisos IAM de la Service Account.
-4. Si el error es `Your default credentials were not found`, define `FIREBASE_CREDENTIALS` en local o usa ADC (`gcloud auth application-default login`).
+### Iteracion 1 (hardening base)
 
-Si falla IANutri:
+1. Auth robusta y autorizacion server-side.
+2. Migracion de password hash.
+3. Rate limiting.
 
-1. Revisar `GITHUB_MODELS_API_KEY` o `GITHUB_TOKEN`.
-2. Revisar conectividad saliente del proveedor cloud.
+### Iteracion 2 (calidad de codigo)
 
-## 4. Nota sobre ZIP
+1. Refactor frontend Home/scanner.
+2. Utilidades compartidas para sesion/alergenos.
+3. Limpieza de textos/codificacion.
 
-No se genero ZIP final por tu instruccion explicita en esta iteracion.
+### Iteracion 3 (operacion)
+
+1. Observabilidad.
+2. Persistencia de favoritos/historial scanner en backend.
+3. Politicas de backup/retencion de Firestore.
+
+## 5. Checklist rapido antes de cada deploy
+
+1. `dotnet build` sin errores.
+2. Variables cloud revisadas y actualizadas.
+3. Smoke tests de:
+- `Auth/Register` y `Auth/Login`.
+- `Allergens GET/PUT`.
+- `IANutri` (3 endpoints + historial).
+4. Verificacion de scanner en movil real.
+5. Confirmar que no hay secretos en repo.
+
+## 6. Gestion de ramas para evitar conflictos de sincronizacion
+
+Practica recomendada para evitar bloqueos de `git pull`:
+
+1. Rama corta por feature (`feature/<tema>`).
+2. Commits pequenos y frecuentes.
+3. Antes de abrir PR:
+- `git fetch origin`
+- `git rebase origin/main` (o merge, segun politica del equipo)
+4. No mezclar cambios no relacionados en la misma rama.
+5. Limpiar archivos no trackeados que puedan colisionar antes de pull.
+
+## 7. Riesgos si no se abordan estos pendientes
+
+1. Riesgo de seguridad en credenciales y sesiones.
+2. Mayor probabilidad de conflictos de datos entre cliente y backend.
+3. Incidencias de rendimiento/estabilidad sin capacidad de diagnostico rapido.
+4. Coste creciente de mantenimiento por duplicacion de logica frontend.
+
+## 8. Referencias
+
+1. `DEPLOY.md`
+2. `docs/06-render-checklist.md`
+3. `README.md`
