@@ -12,6 +12,9 @@
         <a asp-controller="Home" asp-action="Home" asp-fragment="welcome-section" data-section="welcome-section" class="nav-btn@(isHome ? " active" : "")">Home</a>
       </li>
       <li>
+        <a asp-controller="Home" asp-action="Home" asp-fragment="scanner-section" data-section="scanner-section" class="nav-btn">Escanear producto</a>
+      </li>
+      <li>
         <a asp-controller="Home" asp-action="Comidas" class="@(isComidas ? "active" : string.Empty)">Comidas</a>
       </li>
       <li>
@@ -32,7 +35,6 @@
 
     <div class="user-menu-panel" data-user-menu-panel role="menu" aria-hidden="true">
       <a asp-controller="Home" asp-action="Home" asp-fragment="config-section" data-section="config-section" data-user-menu-link class="user-menu-link nav-btn" role="menuitem">Gestionar alergenos</a>
-      <a asp-controller="Home" asp-action="Home" asp-fragment="scanner-section" data-section="scanner-section" data-user-menu-link class="user-menu-link nav-btn" role="menuitem">Escanear producto</a>
       <a asp-controller="Home" asp-action="Home" asp-fragment="historial-section" data-section="historial-section" data-user-menu-link class="user-menu-link nav-btn" role="menuitem">Historial</a>
       <a asp-controller="Home" asp-action="Home" asp-fragment="contact-section" data-section="contact-section" data-user-menu-link class="user-menu-link nav-btn" role="menuitem">Soporte</a>
       <a asp-controller="Home" asp-action="Index" data-user-menu-link data-user-logout class="user-menu-link user-menu-link-danger" role="menuitem">Cerrar sesion</a>
