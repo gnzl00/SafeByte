@@ -141,9 +141,11 @@ function getSelectedAllergens() {
 }
 
 function applyAllergensToForm(allergens) {
-  const selected = new Set(normalizeAllergenArray(allergens));
+  const selectedKeys = new Set(
+    normalizeAllergenArray(allergens).map((allergen) => normalizeAllergenKey(allergen))
+  );
   document.querySelectorAll('.alergeno-card input[type="checkbox"]').forEach((input) => {
-    input.checked = selected.has(input.value);
+    input.checked = selectedKeys.has(normalizeAllergenKey(input.value));
     input.parentElement.classList.toggle("selected", input.checked);
   });
 }
@@ -197,6 +199,19 @@ function readAllergensFromStorage(storageKey) {
   }
 }
 
+function normalizeAllergenKey(value) {
+  if (typeof value !== "string") {
+    return "";
+  }
+
+  return value
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ");
+}
+
 function normalizeAllergenArray(input) {
   if (!Array.isArray(input)) {
     return [];
@@ -215,8 +230,8 @@ function normalizeAllergenArray(input) {
       return;
     }
 
-    const key = trimmed.toLowerCase();
-    if (seen.has(key)) {
+    const key = normalizeAllergenKey(trimmed);
+    if (!key || seen.has(key)) {
       return;
     }
 
