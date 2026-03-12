@@ -2,6 +2,23 @@ const USER_STORAGE_KEY = "sb_user";
 const LOCAL_ALLERGENS_KEY = "alergenosSeleccionados";
 const CACHE_ALLERGENS_KEY = "sb_alergenos";
 const HISTORIAL_KEY = "sb_historial";
+const ALLERGEN_KEY_ALIASES = Object.freeze({
+  gluten: "gluten",
+  lacteos: "lacteos",
+  lcteos: "lacteos",
+  huevo: "huevo",
+  frutossecos: "frutossecos",
+  mariscos: "mariscos",
+  soja: "soja"
+});
+const ALLERGEN_LABEL_BY_KEY = Object.freeze({
+  gluten: "Gluten",
+  lacteos: "Lácteos",
+  huevo: "Huevo",
+  frutossecos: "Frutos secos",
+  mariscos: "Mariscos",
+  soja: "Soja"
+});
 
 document.addEventListener("DOMContentLoaded", () => {
   setupNavigation();
@@ -204,12 +221,19 @@ function normalizeAllergenKey(value) {
     return "";
   }
 
-  return value
+  const token = value
     .trim()
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .replace(/\s+/g, " ");
+    .replace(/[^a-z0-9]/g, "")
+    .trim();
+
+  if (!token) {
+    return "";
+  }
+
+  return ALLERGEN_KEY_ALIASES[token] || token;
 }
 
 function normalizeAllergenArray(input) {
@@ -236,7 +260,7 @@ function normalizeAllergenArray(input) {
     }
 
     seen.add(key);
-    normalized.push(trimmed);
+    normalized.push(ALLERGEN_LABEL_BY_KEY[key] || trimmed);
   });
 
   return normalized;
