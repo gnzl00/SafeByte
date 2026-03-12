@@ -110,9 +110,33 @@ function persistUserSession(user) {
 
   localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(normalizedUser));
 
-  const allergens = normalizeAllergenArray(user.allergens);
+  const allergens = normalizeAllergenArray(readAllergensFromUser(user));
   localStorage.setItem(CACHE_ALLERGENS_KEY, JSON.stringify(allergens));
   localStorage.setItem(LOCAL_ALLERGENS_KEY, JSON.stringify(allergens));
+}
+
+function readAllergensFromUser(user) {
+  if (!user || typeof user !== "object") {
+    return [];
+  }
+
+  if (Array.isArray(user.allergenKeys)) {
+    return user.allergenKeys;
+  }
+
+  if (Array.isArray(user.AllergenKeys)) {
+    return user.AllergenKeys;
+  }
+
+  if (Array.isArray(user.allergens)) {
+    return user.allergens;
+  }
+
+  if (Array.isArray(user.Allergens)) {
+    return user.Allergens;
+  }
+
+  return [];
 }
 
 function clearUserSession() {

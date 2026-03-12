@@ -5,9 +5,12 @@ const HISTORIAL_KEY = "sb_historial";
 const ALLERGEN_KEY_ALIASES = Object.freeze({
   gluten: "gluten",
   lacteos: "lacteos",
+  "la cteos": "lacteos",
+  "l cteos": "lacteos",
   lcteos: "lacteos",
   huevo: "huevo",
-  frutossecos: "frutossecos",
+  "frutos secos": "frutos secos",
+  frutossecos: "frutos secos",
   mariscos: "mariscos",
   soja: "soja"
 });
@@ -15,7 +18,7 @@ const ALLERGEN_LABEL_BY_KEY = Object.freeze({
   gluten: "Gluten",
   lacteos: "Lácteos",
   huevo: "Huevo",
-  frutossecos: "Frutos secos",
+  "frutos secos": "Frutos secos",
   mariscos: "Mariscos",
   soja: "Soja"
 });
@@ -94,7 +97,7 @@ async function loadAllergenPreferences() {
     }
 
     const data = await response.json();
-    const allergens = normalizeAllergenArray(data?.allergens);
+    const allergens = normalizeAllergenArray(readAllergensFromPayload(data));
     applyAllergensToForm(allergens);
     cacheAllergens(allergens);
     showStatus("Preferencias cargadas desde Firebase.", "info");
@@ -106,12 +109,12 @@ async function loadAllergenPreferences() {
 }
 
 async function saveAllergenPreferences() {
-  const selectedAllergens = getSelectedAllergens();
+  const selectedAllergenKeys = getSelectedAllergenKeys();
   const user = getCurrentUser();
   const saveButton = document.getElementById("save-alergenos");
 
   if (!user?.email) {
-    cacheAllergens(selectedAllergens);
+    cacheAllergens(selectedAllergenKeys);
     showStatus("Guardado local (modo invitado). Inicia sesión para persistir en Firebase.", "warning");
     return;
   }
@@ -127,7 +130,7 @@ async function saveAllergenPreferences() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         email: user.email,
-        allergens: selectedAllergens
+        allergens: selectedAllergenKeys
       })
     });
 
@@ -137,9 +140,12 @@ async function saveAllergenPreferences() {
     }
 
     const data = await response.json();
-    const allergens = normalizeAllergenArray(data?.allergens);
-    cacheAllergens(allergens);
-    applyAllergensToForm(allergens);
+    const responseAllergens = normalizeAllergenArray(readAllergensFromPayload(data));
+    const effectiveAllergens = responseAllergens.length > 0
+      ? responseAllergens
+      : normalizeAllergenArray(selectedAllergenKeys);
+    cacheAllergens(effectiveAllergens);
+    applyAllergensToForm(effectiveAllergens);
     showStatus("Preferencias guardadas en Firebase correctamente.", "success");
   } catch (error) {
     showStatus(`No se pudieron guardar tus preferencias. ${error.message}`, "error");
@@ -151,15 +157,15 @@ async function saveAllergenPreferences() {
   }
 }
 
-function getSelectedAllergens() {
-  return normalizeAllergenArray(
+function getSelectedAllergenKeys() {
+  return normalizeAllergenKeyArray(
     Array.from(document.querySelectorAll('input[name="alergeno"]:checked')).map((checkbox) => checkbox.value)
   );
 }
 
 function applyAllergensToForm(allergens) {
   const selectedKeys = new Set(
-    normalizeAllergenArray(allergens).map((allergen) => normalizeAllergenKey(allergen))
+    normalizeAllergenKeyArray(allergens)
   );
   document.querySelectorAll('.alergeno-card input[type="checkbox"]').forEach((input) => {
     input.checked = selectedKeys.has(normalizeAllergenKey(input.value));
@@ -216,6 +222,30 @@ function readAllergensFromStorage(storageKey) {
   }
 }
 
+function readAllergensFromPayload(payload) {
+  if (!payload || typeof payload !== "object") {
+    return [];
+  }
+
+  if (Array.isArray(payload.allergenKeys)) {
+    return payload.allergenKeys;
+  }
+
+  if (Array.isArray(payload.AllergenKeys)) {
+    return payload.AllergenKeys;
+  }
+
+  if (Array.isArray(payload.allergens)) {
+    return payload.allergens;
+  }
+
+  if (Array.isArray(payload.Allergens)) {
+    return payload.Allergens;
+  }
+
+  return [];
+}
+
 function normalizeAllergenKey(value) {
   if (typeof value !== "string") {
     return "";
@@ -226,7 +256,8 @@ function normalizeAllergenKey(value) {
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]/g, "")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
     .trim();
 
   if (!token) {
@@ -236,34 +267,29 @@ function normalizeAllergenKey(value) {
   return ALLERGEN_KEY_ALIASES[token] || token;
 }
 
-function normalizeAllergenArray(input) {
+function normalizeAllergenKeyArray(input) {
   if (!Array.isArray(input)) {
     return [];
   }
 
   const seen = new Set();
-  const normalized = [];
+  const normalizedKeys = [];
 
   input.forEach((value) => {
-    if (typeof value !== "string") {
-      return;
-    }
-
-    const trimmed = value.trim();
-    if (!trimmed) {
-      return;
-    }
-
-    const key = normalizeAllergenKey(trimmed);
-    if (!key || seen.has(key)) {
+    const key = normalizeAllergenKey(value);
+    if (!key || seen.has(key) || !ALLERGEN_LABEL_BY_KEY[key]) {
       return;
     }
 
     seen.add(key);
-    normalized.push(ALLERGEN_LABEL_BY_KEY[key] || trimmed);
+    normalizedKeys.push(key);
   });
 
-  return normalized;
+  return normalizedKeys;
+}
+
+function normalizeAllergenArray(input) {
+  return normalizeAllergenKeyArray(input).map((key) => ALLERGEN_LABEL_BY_KEY[key]);
 }
 
 async function readErrorMessage(response) {

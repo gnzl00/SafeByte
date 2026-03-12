@@ -42,6 +42,7 @@ public class AllergensController : ControllerBase
         }
 
         var allergens = ExtractAndNormalizeAllergens(snapshot);
+        var allergenKeys = AllergenCatalog.NormalizeManyKeys(allergens, out _);
         var updatedAt = snapshot.TryGetValue<Timestamp>("allergensUpdatedAt", out var timestamp)
             ? timestamp.ToDateTime().ToUniversalTime()
             : (DateTime?)null;
@@ -50,6 +51,7 @@ public class AllergensController : ControllerBase
         {
             Email = normalizedEmail,
             Allergens = allergens,
+            AllergenKeys = allergenKeys,
             UpdatedAtUtc = updatedAt
         });
     }
@@ -91,10 +93,12 @@ public class AllergensController : ControllerBase
         };
         await docRef.UpdateAsync(updates);
 
+        var allergenKeys = AllergenCatalog.NormalizeManyKeys(normalizedAllergens, out _);
         return Ok(new UserAllergenPreferencesResponse
         {
             Email = normalizedEmail,
             Allergens = normalizedAllergens,
+            AllergenKeys = allergenKeys,
             UpdatedAtUtc = now.ToDateTime().ToUniversalTime()
         });
     }

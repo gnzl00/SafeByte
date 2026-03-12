@@ -54,7 +54,8 @@ public class AuthController : ControllerBase
             {
                 Username = newUser.Username,
                 Email = email,
-                Allergens = Array.Empty<string>()
+                Allergens = Array.Empty<string>(),
+                AllergenKeys = Array.Empty<string>()
             }
         });
     }
@@ -86,6 +87,7 @@ public class AuthController : ControllerBase
             ? snapshot.GetValue<string>("username")
             : email;
         var allergens = GetNormalizedAllergens(snapshot);
+        var allergenKeys = AllergenCatalog.NormalizeManyKeys(allergens, out _);
 
         return Ok(new
         {
@@ -94,7 +96,8 @@ public class AuthController : ControllerBase
             {
                 Username = username,
                 Email = email,
-                Allergens = allergens
+                Allergens = allergens,
+                AllergenKeys = allergenKeys
             }
         });
     }
