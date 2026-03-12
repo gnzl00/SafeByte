@@ -37,6 +37,24 @@ public static class AllergenCatalog
         return CanonicalByKey.TryGetValue(key, out canonical!);
     }
 
+    public static bool TryNormalizeKey(string? allergen, out string normalizedKey)
+    {
+        normalizedKey = string.Empty;
+        if (string.IsNullOrWhiteSpace(allergen))
+        {
+            return false;
+        }
+
+        var key = NormalizeKey(allergen);
+        if (!CanonicalByKey.ContainsKey(key))
+        {
+            return false;
+        }
+
+        normalizedKey = key;
+        return true;
+    }
+
     public static List<string> NormalizeMany(
         IEnumerable<string>? input,
         out List<string> invalidAllergens)
@@ -56,6 +74,36 @@ public static class AllergenCatalog
                 if (!result.Contains(canonical, StringComparer.OrdinalIgnoreCase))
                 {
                     result.Add(canonical);
+                }
+            }
+            else if (!string.IsNullOrWhiteSpace(allergen))
+            {
+                invalidAllergens.Add(allergen.Trim());
+            }
+        }
+
+        return result;
+    }
+
+    public static List<string> NormalizeManyKeys(
+        IEnumerable<string>? input,
+        out List<string> invalidAllergens)
+    {
+        invalidAllergens = new List<string>();
+        var result = new List<string>();
+
+        if (input is null)
+        {
+            return result;
+        }
+
+        foreach (var allergen in input)
+        {
+            if (TryNormalizeKey(allergen, out var normalizedKey))
+            {
+                if (!result.Contains(normalizedKey, StringComparer.Ordinal))
+                {
+                    result.Add(normalizedKey);
                 }
             }
             else if (!string.IsNullOrWhiteSpace(allergen))
